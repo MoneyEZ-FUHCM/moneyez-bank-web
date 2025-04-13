@@ -56,16 +56,6 @@ const LoginForm = () => {
             </h1>
             <p className="text-sms mx-4 mb-5 mt-3 text-center text-[#a3a1a1] transition-all duration-500 lg:mx-9 lg:text-[15px]">
               {TITLE.SUB_GREETING}{" "}
-              <Link
-                href={PATH_NAME.HOME}
-                // onClick={() => handler.handleBackToHome}
-                className="group relative cursor-pointer text-base font-bold text-primary"
-              >
-                {TITLE.WEB_NAME}
-                <span className="absolute bottom-[-3px] left-0 h-0.5 w-full scale-x-0 transform bg-primary transition-transform duration-300 group-hover:scale-x-100" />
-              </Link>
-              <span>. </span>
-              {TITLE.START}
             </p>
           </motion.div>
           <Form className="login-form" form={form} onFinish={handler.onFinish}>
@@ -257,45 +247,12 @@ const LoginForm = () => {
               </Drawer>
             </motion.div>
           </Form>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1 }}
-          >
-            <div className="mt-4 flex items-center justify-center text-center">
-              <div className="mr-2 h-[1px] w-full bg-[#e6e8eb]"></div>
-              <span className="text-[#999999]">{TITLE.OR}</span>
-              <div className="ml-2 h-[1px] w-full bg-[#e6e8eb]"></div>
-            </div>
-          </motion.div>
+
           <motion.div
             initial={{ y: 50 }}
             animate={{ y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <ButtonCustom
-              onClick={handler.handleGoogleSignIn}
-              disabled={state.isLoggingInGoogle}
-              className="mx-auto mt-5 block h-11 w-full rounded-[5px] border border-gray-300 bg-[#fff] text-[grey] shadow-none hover:!border-primary hover:!bg-transparent hover:!text-primary"
-            >
-              {state.isLoggingInGoogle ? (
-                <Spin
-                  indicator={<LoadingOutlined className="text-primary" />}
-                />
-              ) : (
-                <div className="flex items-center justify-center tracking-wider">
-                  <Image
-                    src="https://freesvg.org/img/1534129544.png"
-                    width={30}
-                    height={30}
-                    quality={100}
-                    alt=""
-                    className="mr-2"
-                  />
-                  {BUTTON.LOGIN_WITH_GOOGLE}
-                </div>
-              )}
-            </ButtonCustom>
             <div className="mt-3 text-center text-sm">
               <span className="text-[#4d4d4d]">{TITLE.DONOT_HAVE_ACCOUNT}</span>{" "}
               <Link

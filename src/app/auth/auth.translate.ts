@@ -5,7 +5,8 @@ export const TEXT_TRANSLATE = {
     REGISTER: "Đăng ký",
     FORGOT_PASSWORD: "Quên mật khẩu",
     WELCOME_BACK: "Chào mừng trở lại",
-    SUB_GREETING: "Quản lý chi tiêu thông minh, tối ưu ngân sách với",
+    SUB_GREETING:
+      "Hệ thống nội bộ ngân hàng – xử lý giao dịch chuyển tiền cho khách hàng",
     WEB_NAME: "MoneyEz",
     START: "Bắt đầu ngay",
     DOB: "Ngày sinh",
