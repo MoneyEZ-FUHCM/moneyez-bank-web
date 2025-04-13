@@ -1,15 +1,25 @@
 "use client";
 
 import { ButtonCustom } from "@/components/ui/button";
+import { TOAST_STATUS } from "@/enums/globals";
 import { Colors } from "@/helpers/constants/color";
+import { COMMON_CONSTANT } from "@/helpers/constants/common";
+import { formatCurrency } from "@/helpers/libs/utils";
+import { showToast } from "@/hooks/useShowToast";
+import {
+  useCreateAccountMutation,
+  useDeleteAccountMutation,
+  useGetAccountListQuery,
+} from "@/services/account";
+import { useGetUserListQuery } from "@/services/admin/user";
 import {
   ArrowDownOutlined,
-  ArrowLeftOutlined,
   ArrowUpOutlined,
-  BankOutlined,
   BarChartOutlined,
   ClockCircleOutlined,
+  CloseOutlined,
   CreditCardOutlined,
+  DeleteOutlined,
   DollarOutlined,
   InfoCircleOutlined,
   LineChartOutlined,
@@ -41,36 +51,19 @@ import {
   Tooltip,
   Typography,
 } from "antd";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 
-// Color palette
-
-// Mock user data
-const users = [
-  { id: "1", name: "Đức Long An", email: "duclongan@gmail.com" },
-  { id: "2", name: "Tran Thi B", email: "tranthib@example.com" },
-  { id: "3", name: "Le Van C", email: "levanc@example.com" },
-];
-
-// Mock transaction types
 const transactionTypes = {
   DEPOSIT: "DEPOSIT",
   WITHDRAW: "WITHDRAW",
 };
 
-// Mock banking stats for dashboard
-const bankingStats = {
-  totalAccounts: 35,
-  totalBalance: 1250000000,
-  avgBalance: 35714285,
-  activeUsers: 28,
-  recentTransactions: 5,
-};
-
 const BankManagement = () => {
+  const [pageIndex, setPageIndex] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
   const [selectedUser, setSelectedUser] = useState(null);
   const [accounts, setAccounts] = useState([]);
   const [selectedAccount, setSelectedAccount] = useState(null);
@@ -79,43 +72,64 @@ const BankManagement = () => {
     useState(false);
   const [transactionType, setTransactionType] = useState(null);
   const [transactionForm] = Form.useForm();
-  const [createForm] = Form.useForm();
-  const [currentView, setCurrentView] = useState("accounts"); // "accounts" or "accountDetail"
+  const [form] = Form.useForm();
+  const [currentView, setCurrentView] = useState("accounts");
+  const { data: userList, isLoading: isLoadingUserList } = useGetUserListQuery({
+    PageIndex: 1,
+    PageSize: 100,
+  });
+  const { data: accountList, isLoading: isLoadingAccountList } =
+    useGetAccountListQuery({
+      PageIndex: pageIndex,
+      PageSize: pageSize,
+    });
+  const { SYSTEM_ERROR } = COMMON_CONSTANT;
 
-  // Generate random account number
-  const generateAccountNumber = () => {
-    return Math.floor(10000000 + Math.random() * 90000000).toString();
+  const [deleteAccount] = useDeleteAccountMutation();
+  const [createAccount] = useCreateAccountMutation();
+
+  const handleDeleteAccount = async (payload: string) => {
+    try {
+      await deleteAccount(payload).unwrap();
+    } catch (err: any) {
+      const error = err?.data;
+      if (error && error.errorCode === "AccountLinkedToWebhook") {
+        showToast(
+          TOAST_STATUS.ERROR,
+          "Tài khoản đã được liên kết. Không được xóa",
+        );
+        return;
+      }
+      showToast(TOAST_STATUS.ERROR, SYSTEM_ERROR.SERVER_ERROR);
+    }
   };
 
-  // Create a new account
-  const handleCreateAccount = (values) => {
-    const accountNumber = values.accountNumber;
-    const newAccount = {
-      id: Date.now().toString(),
-      accountNumber: accountNumber,
-      initialBalance: values.initialBalance || 0,
-      balance: values.initialBalance || 0,
-      userId: values.userId,
-      userName: users.find((u) => u.id === values.userId).name,
-      userEmail: users.find((u) => u.id === values.userId).email,
-      createdAt: new Date().toISOString(),
-    };
+  const accountTotalMoney = useMemo(() => {
+    return (
+      accountList?.items?.reduce((acc, item) => acc + item.balance, 0) || 0
+    );
+  }, [accountList]);
 
-    setAccounts([...accounts, newAccount]);
-    setTransactions({
-      ...transactions,
-      [accountNumber]: [],
-    });
+  const users = userList && userList?.items;
 
-    notification.success({
-      message: "Tài khoản đã được tạo thành công",
-      description: `Số tài khoản: ${newAccount.accountNumber} - Số dư: ${newAccount.balance.toLocaleString()} VND`,
-    });
-
-    createForm.resetFields();
+  const handleCreateAccount = async (payload) => {
+    try {
+      await createAccount(payload).unwrap();
+      showToast(
+        TOAST_STATUS.SUCCESS,
+        `Tài khoản ngân hàng ${payload?.accountNumber} được tạo thành công`,
+      );
+      form.resetFields();
+    } catch (err: any) {
+      const error = err?.data;
+      if (error && error?.errorCode === "AccountNotExist") {
+        showToast(TOAST_STATUS.SUCCESS, "Tài khoản ngân hàng không tồn tại");
+        return;
+      }
+      showToast(TOAST_STATUS.ERROR, SYSTEM_ERROR.SERVER_ERROR);
+    }
   };
 
-  // Handle transaction (deposit/withdraw)
   const handleTransaction = (values) => {
     const { amount, description } = values;
     const account = selectedAccount;
@@ -146,7 +160,6 @@ const BankManagement = () => {
       newBalance -= amount;
     }
 
-    // Update the account in the accounts list
     const updatedAccounts = accounts.map((acc) => {
       if (acc.accountNumber === account.accountNumber) {
         return { ...acc, balance: newBalance };
@@ -154,10 +167,8 @@ const BankManagement = () => {
       return acc;
     });
 
-    // Update the selected account
     const updatedAccount = { ...account, balance: newBalance };
 
-    // Update transactions for this account
     const accountTransactions = transactions[account.accountNumber] || [];
     const updatedTransactions = {
       ...transactions,
@@ -177,25 +188,21 @@ const BankManagement = () => {
     transactionForm.resetFields();
   };
 
-  // Show transaction modal
   const showTransactionModal = (type, account) => {
     setSelectedAccount(account);
     setTransactionType(type);
     setIsTransactionModalVisible(true);
   };
 
-  // Show account details
   const showAccountDetail = (account) => {
     setSelectedAccount(account);
     setCurrentView("accountDetail");
   };
 
-  // Return to accounts list
   const backToAccounts = () => {
     setCurrentView("accounts");
   };
 
-  // Transaction columns for the table
   const transactionColumns = [
     {
       title: "Loại giao dịch",
@@ -246,21 +253,16 @@ const BankManagement = () => {
     },
   ];
 
-  // Columns for accounts list
   const accountColumns = [
     {
       title: "Số tài khoản",
       dataIndex: "accountNumber",
       key: "accountNumber",
-      render: (text) => (
-        <Text copyable strong>
-          {text}
-        </Text>
-      ),
+      render: (text) => <Text copyable>{text}</Text>,
     },
     {
       title: "Chủ tài khoản",
-      dataIndex: "userName",
+      dataIndex: "accountHolder",
       key: "userName",
       render: (text, record) => (
         <Space>
@@ -280,7 +282,7 @@ const BankManagement = () => {
             color: balance > 0 ? Colors.colors.green : Colors.colors.red,
           }}
         >
-          {balance.toLocaleString()} VND
+          {formatCurrency(balance)}
         </Text>
       ),
     },
@@ -326,6 +328,15 @@ const BankManagement = () => {
               className="border-[#CC0000] bg-[#CC0000] hover:bg-[#AA0000]"
             />
           </Tooltip>
+          <Tooltip title="Xóa">
+            <Button
+              danger
+              size="small"
+              icon={<DeleteOutlined />}
+              onClick={() => handleDeleteAccount(record?.id)}
+              className="border-[#CC0000] bg-[#CC0000] hover:bg-[#AA0000]"
+            />
+          </Tooltip>
         </Space>
       ),
     },
@@ -336,10 +347,9 @@ const BankManagement = () => {
 
   const handleGenerate = () => {
     const randomNumber = generateRandomAccountNumber();
-    createForm.setFieldsValue({ accountNumber: randomNumber });
+    form.setFieldsValue({ accountNumber: randomNumber });
   };
 
-  // Render dashboard summary stats
   const renderDashboardStats = () => (
     <Card
       title={
@@ -353,24 +363,17 @@ const BankManagement = () => {
     >
       <div className="grid grid-cols-2 gap-4">
         <Statistic
-          title="Tổng số tài khoản"
-          value={accounts.length || 0}
-          prefix={
-            <CreditCardOutlined style={{ color: Colors.colors.primary }} />
-          }
+          title="Người dùng"
+          value={userList?.totalCount || 0}
+          prefix={<CreditCardOutlined className="mr-1 text-green" />}
           className="rounded-lg border bg-thirdly/30 p-4 shadow-sm"
         />
         <Statistic
-          title="Tổng số dư"
-          value={
-            accounts.reduce((sum, account) => sum + account.balance, 0) || 0
-          }
+          title="Số tiền"
+          value={accountTotalMoney || 0}
           precision={0}
-          suffix="VND"
-          prefix={<DollarOutlined className="text-green" />}
-          formatter={(value) =>
-            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-          }
+          suffix="đ"
+          prefix={<DollarOutlined className="mr-1 text-green" />}
           className="rounded-lg border bg-thirdly/30 p-4 shadow-sm"
         />
       </div>
@@ -381,10 +384,14 @@ const BankManagement = () => {
           Hoạt động gần đây
         </Title>
         <div className="mt-3">
-          {accounts.length > 0 ? (
+          {accountList && accountList?.items?.length > 0 ? (
             <Progress
               percent={Math.min(
-                Math.round((accounts.length / bankingStats.activeUsers) * 100),
+                Math.round(
+                  (accountList?.totalCount /
+                    ((userList?.totalCount ?? 0) * 3)) *
+                    100,
+                ),
                 100,
               )}
               status="active"
@@ -424,10 +431,8 @@ const BankManagement = () => {
     </Card>
   );
 
-  // Render account list view
   const renderAccountsView = () => (
     <div className="flex flex-col gap-6">
-      {/* Page header */}
       <div className="mb-2">
         <Title level={3} className="mb-1 text-primary">
           Quản lý tài khoản ngân hàng
@@ -452,11 +457,7 @@ const BankManagement = () => {
             bordered={false}
             className="h-full rounded-lg bg-white shadow-sm"
           >
-            <Form
-              form={createForm}
-              layout="vertical"
-              onFinish={handleCreateAccount}
-            >
+            <Form form={form} layout="vertical" onFinish={handleCreateAccount}>
               <Form.Item
                 name="userId"
                 label="Chọn khách hàng"
@@ -467,18 +468,25 @@ const BankManagement = () => {
                 <Select
                   placeholder="Chọn khách hàng"
                   onChange={(value) => {
-                    const user = users.find((u) => u.id === value);
+                    const user = users?.find((u) => u.id === value);
                     setSelectedUser(user);
                   }}
                   className="w-full"
                 >
-                  {users.map((user) => (
-                    <Option key={user.id} value={user.id}>
-                      {user.name} ({user.email})
-                    </Option>
-                  ))}
+                  {users &&
+                    users.length > 0 &&
+                    users.map((user) => (
+                      <Option key={user.id} value={user.id}>
+                        <div className="flex items-center gap-2">
+                          <span>
+                            {user?.fullName} - {user?.email}
+                          </span>
+                        </div>
+                      </Option>
+                    ))}
                 </Select>
               </Form.Item>
+
               <Form.Item
                 name="accountNumber"
                 hasFeedback
@@ -500,12 +508,26 @@ const BankManagement = () => {
                   type="text"
                   placeholder="Nhập số tài khoản"
                   maxLength={12}
-                  className="rounded-lg px-3 py-2 hover:border-primary focus:border-primary"
+                  className="w-full rounded-md hover:border-primary focus:border-primary"
                   onKeyPress={(e) => {
                     if (!/[0-9]/.test(e.key)) {
                       e.preventDefault();
                     }
                   }}
+                  addonAfter={
+                    <Button
+                      type="link"
+                      onClick={() => {
+                        const randomNumber = generateRandomAccountNumber();
+                        form.setFieldsValue({
+                          accountNumber: randomNumber,
+                        });
+                      }}
+                      className="hover:!pointer-events-autotext-primary text-black"
+                    >
+                      Tạo
+                    </Button>
+                  }
                 />
               </Form.Item>
 
@@ -541,15 +563,15 @@ const BankManagement = () => {
           title={
             <div className="flex items-center gap-2">
               <UnorderedListOutlined />
-              <span>Danh Sách Tài Khoản ({accounts.length})</span>
+              <span>Danh Sách Tài Khoản ({accountList?.totalCount})</span>
             </div>
           }
           bordered={false}
           className="rounded-lg bg-white shadow-sm"
         >
-          {accounts.length > 0 ? (
+          {accountList && accountList?.items.length > 0 ? (
             <Table
-              dataSource={accounts}
+              dataSource={accountList?.items ?? []}
               columns={accountColumns}
               rowKey="id"
               pagination={{ pageSize: 5 }}
@@ -568,7 +590,6 @@ const BankManagement = () => {
     </div>
   );
 
-  // Render account detail view
   const renderAccountDetailView = () => (
     <div className="flex flex-col gap-4">
       <div className="mb-4">
@@ -748,18 +769,23 @@ const BankManagement = () => {
     </div>
   );
 
-  // Transaction Modal
   const renderTransactionModal = () => (
     <Modal
       title={
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 py-1 text-lg font-semibold">
           {transactionType === transactionTypes.DEPOSIT ? (
             <>
-              <ArrowUpOutlined className="text-primary" /> Nạp tiền
+              <div className="bg-green-100 flex h-8 w-8 items-center justify-center rounded-full">
+                <ArrowUpOutlined className="text-lg text-green" />
+              </div>
+              <span>Nạp tiền</span>
             </>
           ) : (
             <>
-              <ArrowDownOutlined className="text-red" /> Rút tiền
+              <div className="bg-red-100 flex h-8 w-8 items-center justify-center rounded-full">
+                <ArrowDownOutlined className="text-lg text-red" />
+              </div>
+              <span>Rút tiền</span>
             </>
           )}
         </div>
@@ -768,33 +794,50 @@ const BankManagement = () => {
       footer={null}
       onCancel={() => setIsTransactionModalVisible(false)}
       centered
-      className="rounded-lg"
+      className="transaction-modal"
+      width={500}
+      closeIcon={<CloseOutlined className="text-gray-500" />}
     >
       {selectedAccount && (
         <>
-          <Card className="mb-4 rounded-lg bg-[#EBEFD6]">
-            <div className="grid grid-cols-2 gap-4">
+          <Card
+            className="mb-6 overflow-hidden rounded-xl shadow-sm"
+            bordered={false}
+            style={{
+              background:
+                transactionType === transactionTypes.DEPOSIT
+                  ? "linear-gradient(145deg, #f0f9f0 0%, #e6f7e6 100%)"
+                  : "linear-gradient(145deg, #fff5f5 0%, #fee2e2 100%)",
+            }}
+            bodyStyle={{ padding: "16px 20px" }}
+          >
+            <div className="mb-4 grid grid-cols-2 gap-6">
               <div>
-                <Text strong>Tài khoản:</Text>
-                <br />
-                <Text>{selectedAccount.accountNumber}</Text>
+                <Text className="mb-2 block font-medium text-gray-600">
+                  Tài khoản:
+                </Text>
+                <Text className="block text-base font-semibold">
+                  {selectedAccount.accountNumber}
+                </Text>
               </div>
               <div>
-                <Text strong>Chủ tài khoản:</Text>
-                <br />
-                <Text>{selectedAccount.userName}</Text>
+                <Text className="mb-2 block font-medium text-gray-600">
+                  Chủ tài khoản:
+                </Text>
+                <Text className="block text-base font-semibold">
+                  {selectedAccount.fullName}
+                </Text>
               </div>
             </div>
-            <div className="mt-4">
-              <Text strong>Số dư hiện tại:</Text>
-              <br />
+            <Divider className="my-1" />
+            <div className="mt-3">
+              <Text className="mb-2 block font-medium text-gray-600">
+                Số dư hiện tại:
+              </Text>
               <Text
-                className="text-lg font-bold"
+                className="block text-xl font-bold"
                 style={{
-                  color:
-                    selectedAccount.balance > 0
-                      ? Colors.colors.green
-                      : Colors.colors.red,
+                  color: selectedAccount.balance > 0 ? "#16a34a" : "#dc2626",
                 }}
               >
                 {selectedAccount.balance.toLocaleString()} VND
@@ -806,10 +849,12 @@ const BankManagement = () => {
             form={transactionForm}
             layout="vertical"
             onFinish={handleTransaction}
+            requiredMark={false}
+            className="transaction-form"
           >
             <Form.Item
               name="amount"
-              label="Số tiền"
+              label={<span className="font-medium text-gray-700">Số tiền</span>}
               rules={[
                 { required: true, message: "Vui lòng nhập số tiền" },
                 {
@@ -838,21 +883,29 @@ const BankManagement = () => {
                   `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
                 }
                 parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-                addonAfter="VND"
+                addonAfter={<span className="px-2 font-medium">VND</span>}
                 size="large"
+                style={{ borderRadius: "8px" }}
+                placeholder="0"
               />
             </Form.Item>
-            <Form.Item name="description" label="Mô tả">
+            <Form.Item
+              name="description"
+              label={<span className="font-medium text-gray-700">Mô tả</span>}
+            >
               <Input.TextArea
                 placeholder="Nhập mô tả giao dịch (không bắt buộc)"
                 rows={3}
+                className="rounded-lg"
+                style={{ resize: "none" }}
               />
             </Form.Item>
-            <Form.Item>
-              <div className="flex justify-end gap-2">
+            <Form.Item className="mb-0">
+              <div className="mt-5 flex justify-end gap-3">
                 <Button
                   onClick={() => setIsTransactionModalVisible(false)}
                   size="large"
+                  className="min-w-24 rounded-lg border-gray-300 font-medium hover:bg-gray-50 hover:text-gray-700"
                 >
                   Hủy
                 </Button>
@@ -860,13 +913,21 @@ const BankManagement = () => {
                   type="primary"
                   htmlType="submit"
                   size="large"
-                  className={
+                  className={`min-w-32 rounded-lg font-medium ${
                     transactionType === transactionTypes.DEPOSIT
-                      ? "border-[#00A010] bg-[#00A010] hover:bg-[#008010]"
-                      : "border-[#CC0000] bg-[#CC0000] hover:bg-[#AA0000]"
+                      ? "border-green bg-green hover:!bg-green"
+                      : "border-red bg-red hover:!bg-red"
+                  }`}
+                  icon={
+                    transactionType === transactionTypes.DEPOSIT ? (
+                      <ArrowUpOutlined className="mr-1" />
+                    ) : (
+                      <ArrowDownOutlined className="mr-1" />
+                    )
                   }
                 >
-                  Xác nhận
+                  Xác nhận{" "}
+                  {transactionType === transactionTypes.DEPOSIT ? "nạp" : "rút"}
                 </Button>
               </div>
             </Form.Item>

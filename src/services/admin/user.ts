@@ -8,7 +8,7 @@ const userManagementApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getUserList: builder.query({
       query: ({ PageIndex, PageSize, search }) => ({
-        url: `/users?PageIndex=${PageIndex}&PageSize=${PageSize}&search=${search}`,
+        url: `/users?PageIndex=${PageIndex}&PageSize=${PageSize}`,
         method: HTTP_METHOD.GET,
       }),
       transformResponse: (response) => transformCommonResponse<User>(response),

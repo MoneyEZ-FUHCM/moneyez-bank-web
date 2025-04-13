@@ -109,7 +109,7 @@ const LoginForm = () => {
                     message: MESSAGE_VALIDATE.PASSWORD_REQUIRED,
                   },
                   {
-                    min: 8,
+                    min: 5,
                     message: MESSAGE_VALIDATE.PASSWORD_8_CHARACTERS,
                   },
                 ]}
@@ -146,14 +146,14 @@ const LoginForm = () => {
                 >
                   {BUTTON.REMEMBER_ME}
                 </Checkbox>
-                <Link
+                {/* <Link
                   href="#"
                   className="group relative float-right cursor-pointer font-semibold text-primary hover:text-primary"
                   onClick={() => handler.setIsShowForgotPassword(true)}
                 >
                   {BUTTON.FORGOT_PASSWORD}
                   <span className="absolute bottom-[-3px] left-0 h-0.5 w-full scale-x-0 transform bg-primary transition-transform duration-300 group-hover:scale-x-100" />
-                </Link>
+                </Link> */}
               </Form.Item>
             </motion.div>
             <motion.div

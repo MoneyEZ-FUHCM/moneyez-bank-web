@@ -72,7 +72,7 @@ export const TEXT_TRANSLATE = {
 
     INPUT_PHONE_NUMBER: "Vui lòng nhập đúng số điện thoại (10-11 chữ số)",
     INPUT_EMAIL: "Email phải đúng định dạng",
-    PASSWORD_8_CHARACTERS: "Mật khẩu phải có ít nhất 8 ký tự",
+    PASSWORD_8_CHARACTERS: "Mật khẩu phải có ít nhất 5 ký tự",
     PASSWORD_MIN_LENGTH: "Mật khẩu phải có ít nhất 8 ký tự",
     PASSWORDS_MUST_MATCH: "Mật khẩu và xác nhận mật khẩu phải giống nhau",
     OTP_5_DIGITS: "Vui lòng nhập đầy đủ 5 số",
