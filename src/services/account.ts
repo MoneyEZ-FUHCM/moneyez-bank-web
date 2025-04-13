@@ -8,7 +8,7 @@ const accountManagementApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAccountList: builder.query({
       query: ({ PageIndex, PageSize, search }) => ({
-        url: `/accounts?PageIndex=${PageIndex}&PageSize=${PageSize}&is_deleted=false`,
+        url: `/accounts?PageIndex=${PageIndex}&PageSize=${PageSize}&search=${search}&sort_by=date&dir=desc&is_deleted=false`,
         method: HTTP_METHOD.GET,
       }),
       transformResponse: (response) =>
@@ -30,6 +30,12 @@ const accountManagementApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Account"],
     }),
+    getDetailBankAccount: builder.query({
+      query: (payload) => ({
+        url: `/accounts/${payload}`,
+        method: HTTP_METHOD.GET,
+      }),
+    }),
   }),
 });
 
@@ -37,6 +43,7 @@ export const {
   useGetAccountListQuery,
   useCreateAccountMutation,
   useDeleteAccountMutation,
+  useGetDetailBankAccountQuery,
 } = accountManagementApi;
 
 export default accountManagementApi;

@@ -12,8 +12,7 @@ const VALID_PATHS = new Set(["/", "/notfound", PATH_NAME.MANAGE_BANK]);
 
 const ADMIN_PATHS = new Set([PATH_NAME.MANAGE_BANK]);
 
-const ADMIN_DYNAMIC_PATHS =
-  /^\/admin\/(manage-category|manage-sub-category|manage-model|manage-group)\/[^/]+$/;
+const ADMIN_DYNAMIC_PATHS = /^\/bank\/(manage-bank)\/[^/]+$/;
 
 export function LoadingWrapper({
   children,

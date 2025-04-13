@@ -33,3 +33,14 @@ export interface UserInfo {
   updatedBy: string | null;
   isDeleted: boolean;
 }
+
+export interface UserFilter {
+  email: string;
+  fullName: string;
+  createdAt: string;
+  id: string;
+  isDeleted: boolean;
+  phoneNumber: string;
+  updatedAt: string;
+}
+export type UserFilterList = UserFilter[];
