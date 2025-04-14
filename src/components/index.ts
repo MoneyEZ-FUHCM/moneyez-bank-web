@@ -22,3 +22,4 @@ export { CountupCustom } from "./common/Countup";
 export { SearchAndAdd } from "./common/table/SearchAndAdd";
 export { TableCustom } from "./common/table/TableCustom";
 export { BackToTop } from "./BackToTop";
+export { LoadingSectionWrapper } from "./common/LoadingSectionWrapper";

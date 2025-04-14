@@ -1,3 +1,0 @@
-const useNotificationManagementPage = () => {};
-
-export { useNotificationManagementPage };
