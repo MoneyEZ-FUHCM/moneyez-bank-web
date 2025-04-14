@@ -21,6 +21,7 @@ export const AUTH_CONSTANT = {
     ACCOUNT_BLOCKED: "AccountWasBlocked",
     DUPLICATE_PHONE_NUMBER: "DuplicatePhoneNumber",
     OTP_HAS_SENT: "OtpHasSent",
+    INVALID_ACCOUNT_BANK: "InvalidEmailOrPassword",
   },
 
   MAX_LENGTH_OTP: 5,

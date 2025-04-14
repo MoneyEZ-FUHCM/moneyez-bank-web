@@ -1,6 +1,5 @@
 "use client";
 
-import { VALID_ROLE } from "@/enums/globals";
 import { PATH_NAME } from "@/helpers/constants/pathname";
 import useUserInfo from "@/hooks/useUserInfo";
 import { selectUserInfo } from "@/redux/slices/userSlice";
@@ -9,38 +8,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
-const VALID_PATHS = new Set([
-  "/",
-  "/notfound",
-  "/admin",
-  "/user",
-  "/auth",
-  "/admin/statistic",
-  "/admin/manage-user",
-  "/admin/manage-model",
-  "/admin/manage-category",
-  "/admin/manage-sub-category",
-  "/admin/manage-notification",
-  "/admin/manage-group",
-  "/user/chart",
-  "/admin/manage-quiz",
-]);
+const VALID_PATHS = new Set(["/", "/notfound", PATH_NAME.MANAGE_BANK]);
 
-const ADMIN_PATHS = new Set([
-  "/admin",
-  "/admin/statistic",
-  "/admin/manage-user",
-  "/admin/manage-model",
-  "/admin/manage-category",
-  "/admin/manage-sub-category",
-  "/admin/manage-notification",
-  "/admin/manage-group",
-  "/admin/manage-quiz",
-]);
+const ADMIN_PATHS = new Set([PATH_NAME.MANAGE_BANK]);
 
-const USER_PATHS = new Set(["/user", "/user/chart"]);
-const ADMIN_DYNAMIC_PATHS =
-  /^\/admin\/(manage-category|manage-sub-category|manage-model|manage-group)\/[^/]+$/;
+const ADMIN_DYNAMIC_PATHS = /^\/bank\/(manage-bank)\/[^/]+$/;
 
 export function LoadingWrapper({
   children,
@@ -56,18 +28,11 @@ export function LoadingWrapper({
 
   useEffect(() => {
     if (!token) {
-      if (
-        pathname.startsWith(PATH_NAME.USER) ||
-        pathname.startsWith(PATH_NAME.ADMIN)
-      ) {
-        router.replace(PATH_NAME.AUTH);
-      }
+      router.replace(PATH_NAME.AUTH);
       return;
     }
 
     if (loading || !userInfo) return;
-
-    const role = userInfo?.role;
 
     const isValidPath =
       VALID_PATHS.has(pathname) || ADMIN_DYNAMIC_PATHS.test(pathname);
@@ -76,14 +41,8 @@ export function LoadingWrapper({
       return;
     }
 
-    if (role === VALID_ROLE.ADMIN) {
-      if (!(ADMIN_PATHS.has(pathname) || ADMIN_DYNAMIC_PATHS.test(pathname))) {
-        router.replace(PATH_NAME.STATISTIC);
-      }
-    } else if (role === VALID_ROLE.USER) {
-      if (!USER_PATHS.has(pathname)) {
-        router.replace(PATH_NAME.USER);
-      }
+    if (!(ADMIN_PATHS.has(pathname) || ADMIN_DYNAMIC_PATHS.test(pathname))) {
+      router.replace(PATH_NAME.MANAGE_BANK);
     }
   }, [token, pathname, loading, userInfo]);
 

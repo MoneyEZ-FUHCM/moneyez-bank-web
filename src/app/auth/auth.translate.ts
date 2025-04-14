@@ -5,7 +5,8 @@ export const TEXT_TRANSLATE = {
     REGISTER: "Đăng ký",
     FORGOT_PASSWORD: "Quên mật khẩu",
     WELCOME_BACK: "Chào mừng trở lại",
-    SUB_GREETING: "Quản lý chi tiêu thông minh, tối ưu ngân sách với",
+    SUB_GREETING:
+      "Hệ thống nội bộ ngân hàng – xử lý giao dịch chuyển tiền cho khách hàng",
     WEB_NAME: "MoneyEz",
     START: "Bắt đầu ngay",
     DOB: "Ngày sinh",
@@ -71,7 +72,7 @@ export const TEXT_TRANSLATE = {
 
     INPUT_PHONE_NUMBER: "Vui lòng nhập đúng số điện thoại (10-11 chữ số)",
     INPUT_EMAIL: "Email phải đúng định dạng",
-    PASSWORD_8_CHARACTERS: "Mật khẩu phải có ít nhất 8 ký tự",
+    PASSWORD_8_CHARACTERS: "Mật khẩu phải có ít nhất 5 ký tự",
     PASSWORD_MIN_LENGTH: "Mật khẩu phải có ít nhất 8 ký tự",
     PASSWORDS_MUST_MATCH: "Mật khẩu và xác nhận mật khẩu phải giống nhau",
     OTP_5_DIGITS: "Vui lòng nhập đầy đủ 5 số",

@@ -1,7 +1,7 @@
-import { auth } from "@/configs/firebase";
 import { TOAST_STATUS, VALID_ROLE } from "@/enums/globals";
 import { COMMON_CONSTANT } from "@/helpers/constants/common";
 import { PATH_NAME } from "@/helpers/constants/pathname";
+import { encryptData } from "@/helpers/libs/utils";
 import { useDecryptCredentials } from "@/hooks/useDecryptCredentials";
 import { showToast } from "@/hooks/useShowToast";
 import {
@@ -10,9 +10,8 @@ import {
   useVerifyMutation,
 } from "@/services/auth";
 import { ApiResponse } from "@/types/login.type";
-import { encryptData } from "@/utils";
 import { FormInstance } from "antd";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider } from "firebase/auth";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/navigation";
@@ -49,8 +48,6 @@ const useLoginPage = (form: FormInstance) => {
         password: values.password,
       }).unwrap();
       if (res && res.status === HTTP_STATUS.SUCCESS.OK) {
-        Cookies.set("accessToken", res.data.accessToken);
-        Cookies.set("refreshToken", res.data.refreshToken);
         const accessToken = res.data.accessToken;
         if (accessToken) {
           const decoded: any = jwtDecode(accessToken);
@@ -67,11 +64,15 @@ const useLoginPage = (form: FormInstance) => {
           }
 
           if (role === VALID_ROLE.USER) {
-            router.replace(PATH_NAME.CHART);
-          } else {
-            router.replace(PATH_NAME.STATISTIC);
+            showToast(
+              TOAST_STATUS.ERROR,
+              "Bạn không có quyền truy cập vào ứng dụng này",
+            );
+            return;
           }
-
+          Cookies.set("accessToken", res.data.accessToken);
+          Cookies.set("refreshToken", res.data.refreshToken);
+          router.replace(PATH_NAME.MANAGE_BANK);
           showToast(TOAST_STATUS.SUCCESS, MESSAGE_SUCCESS.LOGIN_SUCCESSFUL);
         }
       }
@@ -100,53 +101,19 @@ const useLoginPage = (form: FormInstance) => {
       }
       if (
         error?.status === HTTP_STATUS.CLIENT_ERROR.UNAUTHORIZED &&
+        error?.errorCode === ERROR_CODE.INVALID_ACCOUNT_BANK
+      ) {
+        showToast(TOAST_STATUS.ERROR, MESSAGE_ERROR.INVALID_INFO);
+        return;
+      }
+      if (
+        error?.status === HTTP_STATUS.CLIENT_ERROR.UNAUTHORIZED &&
         error?.errorCode === ERROR_CODE.ACCOUNT_NEED_CONFIRM_EMAIL
       ) {
         showToast(TOAST_STATUS.SUCCESS, MESSAGE_ERROR.DOEST_NOT_VERIFY_EMAIL);
         setTimeout(() => {
           setIsDrawerVisible(true);
         }, 500);
-        return;
-      }
-      showToast(TOAST_STATUS.ERROR, SYSTEM_ERROR.SERVER_ERROR);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    provider.setCustomParameters({
-      prompt: "select_account",
-    });
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const credentials = await result.user.getIdTokenResult();
-      const accessToken = credentials.token;
-      const res = await loginGoogle(JSON.stringify(accessToken)).unwrap();
-      if (res && res.status === HTTP_STATUS.SUCCESS.OK) {
-        const accessToken = res.data.accessToken;
-        if (accessToken) {
-          Cookies.set("accessToken", res.data.accessToken);
-          Cookies.set("refreshToken", res.data.refreshToken);
-          const decoded: any = jwtDecode(accessToken);
-          const role =
-            decoded[
-              "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-            ];
-          if (role !== VALID_ROLE.USER) {
-            router.replace(PATH_NAME.STATISTIC);
-            return;
-          } else {
-            router.replace(PATH_NAME.CHART);
-            showToast(TOAST_STATUS.SUCCESS, MESSAGE_SUCCESS.LOGIN_SUCCESSFUL);
-          }
-        }
-      }
-    } catch (err: any) {
-      const error = err?.data;
-      if (
-        error?.status === HTTP_STATUS.CLIENT_ERROR.UNAUTHORIZED &&
-        error?.errorCode === ERROR_CODE.ACCOUNT_BLOCKED
-      ) {
-        showToast(TOAST_STATUS.ERROR, MESSAGE_ERROR.ACCOUNT_BLOCKED);
         return;
       }
       showToast(TOAST_STATUS.ERROR, SYSTEM_ERROR.SERVER_ERROR);
@@ -173,10 +140,10 @@ const useLoginPage = (form: FormInstance) => {
               "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
             ];
           if (role !== VALID_ROLE.USER) {
-            router.replace(PATH_NAME.STATISTIC);
+            router.replace(PATH_NAME.MANAGE_BANK);
             return;
           } else {
-            router.replace(PATH_NAME.CHART);
+            router.replace(PATH_NAME.MANAGE_BANK);
             showToast(TOAST_STATUS.SUCCESS, MESSAGE_SUCCESS.LOGIN_SUCCESSFUL);
           }
         }
@@ -220,7 +187,6 @@ const useLoginPage = (form: FormInstance) => {
       setRememberMe,
       setOtpCode,
       onFinish,
-      handleGoogleSignIn,
       handleOTPSubmit,
       handleDrawerClose,
       handleBackToHome,

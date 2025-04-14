@@ -1,4 +1,4 @@
-import { decryptData } from "@/utils";
+import { decryptData } from "@/helpers/libs/utils";
 import Cookies from "js-cookie";
 
 export function useDecryptCredentials() {
