@@ -50,7 +50,8 @@ jobs:
       - name: Deploy to VPS
         run: |
           docker pull ducdang03/moneyez-bank-web:latest
-          docker run -d --name moneyez-bank-web -p 3333:3000 ducdang03/moneyez-bank-web:latest
+          echo "${{ secrets.ENV_FILE_BASE64 }}" | base64 --decode > .env
+          docker run -d --name moneyez-bank-web --env-file .env -p 3333:3000 ducdang03/moneyez-bank-web:latest
 
       - name: Verify running containers
         run: docker ps -a

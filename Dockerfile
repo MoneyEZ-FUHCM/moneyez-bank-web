@@ -2,7 +2,6 @@
 FROM node:18-alpine AS deps
 WORKDIR /app
 
-COPY .env ./
 COPY package.json yarn.lock* ./
 COPY tsconfig.json ./
 COPY tailwind.config.ts ./
@@ -19,7 +18,6 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/tsconfig.json ./
 COPY --from=deps /app/tailwind.config.ts ./
 COPY --from=deps /app/postcss.config.mjs ./
-COPY --from=deps /app/.env ./
 
 # Copy source files
 COPY src ./src
@@ -41,7 +39,6 @@ COPY --from=builder /app/next.config.mjs ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/.env ./
 
 EXPOSE 3000
 CMD ["yarn", "start"]
