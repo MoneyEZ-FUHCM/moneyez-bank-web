@@ -1,7 +1,7 @@
-import { auth } from "@/configs/firebase";
 import { TOAST_STATUS, VALID_ROLE } from "@/enums/globals";
 import { COMMON_CONSTANT } from "@/helpers/constants/common";
 import { PATH_NAME } from "@/helpers/constants/pathname";
+import { encryptData } from "@/helpers/libs/utils";
 import { useDecryptCredentials } from "@/hooks/useDecryptCredentials";
 import { showToast } from "@/hooks/useShowToast";
 import {
@@ -11,14 +11,13 @@ import {
 } from "@/services/auth";
 import { ApiResponse } from "@/types/login.type";
 import { FormInstance } from "antd";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider } from "firebase/auth";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { AUTH_CONSTANT } from "../auth.constant";
 import { TEXT_TRANSLATE } from "../auth.translate";
-import { encryptData } from "@/helpers/libs/utils";
 
 const useLoginPage = (form: FormInstance) => {
   // mutation & provider
@@ -49,8 +48,6 @@ const useLoginPage = (form: FormInstance) => {
         password: values.password,
       }).unwrap();
       if (res && res.status === HTTP_STATUS.SUCCESS.OK) {
-        Cookies.set("accessToken", res.data.accessToken);
-        Cookies.set("refreshToken", res.data.refreshToken);
         const accessToken = res.data.accessToken;
         if (accessToken) {
           const decoded: any = jwtDecode(accessToken);
@@ -67,11 +64,15 @@ const useLoginPage = (form: FormInstance) => {
           }
 
           if (role === VALID_ROLE.USER) {
-            router.replace(PATH_NAME.MANAGE_BANK);
-          } else {
-            router.replace(PATH_NAME.MANAGE_BANK);
+            showToast(
+              TOAST_STATUS.ERROR,
+              "Bạn không có quyền truy cập vào ứng dụng này",
+            );
+            return;
           }
-
+          Cookies.set("accessToken", res.data.accessToken);
+          Cookies.set("refreshToken", res.data.refreshToken);
+          router.replace(PATH_NAME.MANAGE_BANK);
           showToast(TOAST_STATUS.SUCCESS, MESSAGE_SUCCESS.LOGIN_SUCCESSFUL);
         }
       }

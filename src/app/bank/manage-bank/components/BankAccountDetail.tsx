@@ -2,20 +2,21 @@
 
 import { LoadingSectionWrapper } from "@/components";
 import { ButtonCustom } from "@/components/ui/button";
+import { TRANSACTION_TYPE } from "@/enums/globals";
 import { Colors } from "@/helpers/constants/color";
 import {
   formatCurrency,
   formatDate,
   formatTimestampWithHour,
 } from "@/helpers/libs/utils";
-import { useGetDetailBankAccountQuery } from "@/services/account";
-import { useGetTransactionListQuery } from "@/services/transaction";
+import { BankAccount } from "@/types/bankAccount.types";
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
   BarChartOutlined,
   CreditCardOutlined,
   InfoCircleOutlined,
+  SwapOutlined,
   TransactionOutlined,
   UserOutlined,
 } from "@ant-design/icons";
@@ -25,67 +26,21 @@ import {
   Space,
   Statistic,
   Table,
-  TablePaginationConfig,
   Tag,
   Tooltip,
   Typography,
 } from "antd";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-
-const transactionTypes = {
-  DEPOSIT: "DEPOSIT",
-  WITHDRAW: "WITHDRAW",
-};
+import { useRouter } from "next/navigation";
+import { useBankManagement } from "../hooks/useBankManagement";
+import { TransactionModal } from "./TransactionModal";
 
 const BankAccountDetail = () => {
   const router = useRouter();
-  const { id } = useParams();
-
-  const [selectedAccount, setSelectedAccount] = useState(null);
-  const [transactions, setTransactions] = useState({});
-  const [isTransactionModalVisible, setIsTransactionModalVisible] =
-    useState(false);
-  const [transactionType, setTransactionType] = useState(null);
-
-  const { data: accountDetail, isLoading: isLoadingAccountDetail } =
-    useGetDetailBankAccountQuery(id, { skip: !id });
-  const { Title, Text, Paragraph } = Typography;
-  const [pageIndex, setPageIndex] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
-  const handlePageChange = (pagination: TablePaginationConfig) => {
-    setPageIndex(pagination.current ?? 1);
-    setPageSize(pagination.pageSize ?? 10);
-  };
-  const { data: transactionList } = useGetTransactionListQuery(
-    {
-      accountId: id,
-      PageIndex: 1,
-      PageSize: 100,
-    },
-    { skip: !id },
-  );
-
-  useEffect(() => {
-    if (accountDetail && accountDetail.data) {
-      setSelectedAccount(accountDetail?.data);
-
-      if (accountDetail?.data?.transactions) {
-        setTransactions({
-          [accountDetail.accountNumber]: accountDetail.transactions,
-        });
-      }
-    }
-  }, [accountDetail]);
+  const { state, handler } = useBankManagement();
+  const { Text } = Typography;
 
   const backToAccounts = () => {
     router.push("/bank/manage-bank");
-  };
-
-  const showTransactionModal = (type, account) => {
-    setSelectedAccount(account);
-    setTransactionType(type);
-    setIsTransactionModalVisible(true);
   };
 
   const transactionColumns = [
@@ -94,7 +49,7 @@ const BankAccountDetail = () => {
       dataIndex: "index",
       key: "index",
       render: (_: any, _record: any, index: number) =>
-        (pageIndex - 1) * pageSize + index + 1,
+        (state.pageIndex - 1) * state.pageSize + index + 1,
     },
     {
       title: "Mô tả",
@@ -105,36 +60,63 @@ const BankAccountDetail = () => {
       title: "Số tiền",
       dataIndex: "amount",
       key: "amount",
-      render: (amount, record) => (
-        <Text
-          strong
-          style={{
-            color:
-              record.type === transactionTypes.DEPOSIT
-                ? Colors.colors.green
-                : Colors.colors.red,
-          }}
-        >
-          {record.type === transactionTypes.DEPOSIT ? "+" : "-"}
-          {formatCurrency(amount)}
-        </Text>
-      ),
+      render: (amount: number, record: any) => {
+        let color = Colors.colors.red;
+        let prefix = "-";
+
+        switch (record.type) {
+          case TRANSACTION_TYPE.DEPOSIT:
+            color = Colors.colors.green;
+            prefix = "+";
+            break;
+          case TRANSACTION_TYPE.TRANSFER:
+            color = Colors.colors.red;
+            prefix = "-";
+            break;
+          case TRANSACTION_TYPE.WITHDRAW:
+          default:
+            color = Colors.colors.red;
+            prefix = "-";
+        }
+        return (
+          <Text strong style={{ color }}>
+            {prefix}
+            {formatCurrency(amount)}
+          </Text>
+        );
+      },
     },
     {
       title: "Loại giao dịch",
       dataIndex: "type",
       key: "type",
-      render: (type) => (
-        <Tag color={type === transactionTypes.DEPOSIT ? "blue" : "red"}>
-          {type === transactionTypes.DEPOSIT ? "Nạp tiền" : "Rút tiền"}
-        </Tag>
-      ),
+      render: (type: number) => {
+        let color = "red";
+        let label = "Rút tiền";
+
+        switch (type) {
+          case TRANSACTION_TYPE.DEPOSIT:
+            color = "blue";
+            label = "Nạp tiền";
+            break;
+          case TRANSACTION_TYPE.TRANSFER:
+            color = "orange";
+            label = "Chuyển tiền";
+            break;
+          case TRANSACTION_TYPE.WITHDRAW:
+          default:
+            color = "red";
+            label = "Rút tiền";
+        }
+
+        return <Tag color={color}>{label}</Tag>;
+      },
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status) => (
+      render: (status: string) => (
         <Tag color={status === "SUCCESS" ? "green" : "red"}>
           {status === "SUCCESS" ? "Thành công" : "Thất bại"}
         </Tag>
@@ -144,12 +126,13 @@ const BankAccountDetail = () => {
       title: "Ngày giao dịch",
       dataIndex: "transactionDate",
       key: "transactionDate",
-      render: (transactionDate) => formatTimestampWithHour(transactionDate),
+      render: (transactionDate: string) =>
+        formatTimestampWithHour(transactionDate),
     },
   ];
 
   return (
-    <LoadingSectionWrapper isLoading={isLoadingAccountDetail}>
+    <LoadingSectionWrapper isLoading={state.isLoadingAccountDetail}>
       <div className="flex flex-col gap-4">
         <div className="mb-4">
           <Breadcrumb
@@ -165,8 +148,8 @@ const BankAccountDetail = () => {
                 ),
               },
               {
-                title: selectedAccount
-                  ? `Tài khoản ${selectedAccount.accountNumber}`
+                title: state.accountDetail?.data?.accountNumber
+                  ? `Tài khoản ${state.accountDetail?.data?.accountNumber}`
                   : "",
               },
             ]}
@@ -178,7 +161,9 @@ const BankAccountDetail = () => {
             title={
               <div className="flex items-center gap-2">
                 <CreditCardOutlined />
-                <span>Chi tiết tài khoản {selectedAccount?.userName}</span>
+                <span>
+                  Chi tiết tài khoản {state.accountDetail?.data?.userName}
+                </span>
               </div>
             }
             bordered={false}
@@ -187,9 +172,9 @@ const BankAccountDetail = () => {
               <Space>
                 <ButtonCustom
                   onClick={() =>
-                    showTransactionModal(
-                      transactionTypes.DEPOSIT,
-                      selectedAccount,
+                    handler.showTransactionModal(
+                      TRANSACTION_TYPE.DEPOSIT as any,
+                      state.accountDetail?.data,
                     )
                   }
                   className="flex w-[100px] items-center gap-2 bg-green px-5 text-white hover:bg-green/75"
@@ -198,19 +183,30 @@ const BankAccountDetail = () => {
                 </ButtonCustom>
                 <ButtonCustom
                   onClick={() =>
-                    showTransactionModal(
-                      transactionTypes.WITHDRAW,
-                      selectedAccount,
+                    handler.showTransactionModal(
+                      TRANSACTION_TYPE.WITHDRAW as any,
+                      state.accountDetail?.data,
                     )
                   }
                   className="flex w-[100px] items-center gap-2 bg-red px-5 text-white hover:bg-red/75"
                 >
                   <ArrowDownOutlined /> <span>Rút tiền</span>
                 </ButtonCustom>
+                <ButtonCustom
+                  onClick={() =>
+                    handler.showTransactionModal(
+                      TRANSACTION_TYPE.TRANSFER as any,
+                      state.accountDetail?.data,
+                    )
+                  }
+                  className="hover:bg-blue/75 flex min-w-[100px] items-center gap-2 bg-blue-500 px-5 text-white"
+                >
+                  <SwapOutlined /> <span>Chuyển tiền</span>
+                </ButtonCustom>
               </Space>
             }
           >
-            {selectedAccount && (
+            {state.accountDetail?.data && (
               <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Card className="rounded-lg border bg-thirdly/30 p-4 shadow-sm">
                   <Statistic
@@ -220,7 +216,7 @@ const BankAccountDetail = () => {
                     }
                     valueRender={() => (
                       <Text className="text-2xl">
-                        {accountDetail?.data?.accountNumber}
+                        {state.accountDetail?.data?.accountNumber}
                       </Text>
                     )}
                   />
@@ -228,17 +224,17 @@ const BankAccountDetail = () => {
                 <Card className="rounded-lg border bg-thirdly/30 p-4 shadow-sm">
                   <Statistic
                     title="Số dư hiện tại"
-                    value={accountDetail?.data?.balance}
+                    value={state.accountDetail?.data?.balance}
                     precision={0}
                     suffix="VND"
                     valueStyle={{
                       color:
-                        accountDetail?.data?.balance > 0
+                        state.accountDetail?.data?.balance > 0
                           ? Colors.colors.green
                           : Colors.colors.red,
                     }}
                     prefix={
-                      accountDetail?.data?.balance > 0 ? (
+                      state.accountDetail?.data?.balance > 0 ? (
                         <ArrowUpOutlined className="mr-1" />
                       ) : (
                         <ArrowDownOutlined className="mr-1" />
@@ -252,14 +248,14 @@ const BankAccountDetail = () => {
                 <Card className="rounded-lg border bg-thirdly/30 p-4 shadow-sm">
                   <Statistic
                     title="Chủ tài khoản"
-                    value={accountDetail?.data?.accountHolder}
+                    value={state.accountDetail?.data?.accountHolder}
                     prefix={<UserOutlined className="mr-1 text-primary" />}
                   />
                 </Card>
                 <Card className="rounded-lg border bg-thirdly/30 p-4 shadow-sm">
                   <Statistic
                     title="Ngày tạo"
-                    value={formatDate(accountDetail?.data?.createdAt)}
+                    value={formatDate(state.accountDetail?.data?.createdAt)}
                     prefix={<BarChartOutlined className="mr-1 text-primary" />}
                   />
                 </Card>
@@ -282,33 +278,41 @@ const BankAccountDetail = () => {
               <div className="flex items-center text-sm text-gray-500">
                 <Tooltip title="Hiển thị tất cả các giao dịch của tài khoản này">
                   <InfoCircleOutlined className="mr-1" />
-                  {transactionList?.totalCount} giao dịch
+                  {state.transactionList?.totalCount} giao dịch
                 </Tooltip>
               </div>
             }
           >
             <>
               <Table
-                dataSource={transactionList?.items ?? []}
+                dataSource={state.transactionList?.items ?? []}
                 columns={transactionColumns}
                 rowKey="id"
                 pagination={{
-                  current: pageIndex,
-                  total: transactionList?.totalCount,
-                  pageSize: pageSize,
+                  current: state.pageIndex,
+                  total: state.transactionList?.totalCount,
+                  pageSize: state.pageSize,
                 }}
                 className="mt-2"
                 rowClassName="hover:bg-light transition-colors"
-                onChange={handlePageChange}
+                onChange={handler.handlePageChange}
               />
             </>
           </Card>
         </div>
 
-        {/* Transaction Modal will need to be implemented here or imported */}
+        <TransactionModal
+          isVisible={state.isTransactionModalVisible}
+          onClose={() => handler.setIsTransactionModalVisible(false)}
+          selectedAccount={state.selectedAccount as BankAccount}
+          transactionType={state.transactionType as any}
+          onFinish={handler.handleTransaction}
+          form={state.transactionForm}
+          bankOptions={state.accountListFilter}
+        />
       </div>
     </LoadingSectionWrapper>
   );
 };
 
-export default BankAccountDetail;
+export { BankAccountDetail };

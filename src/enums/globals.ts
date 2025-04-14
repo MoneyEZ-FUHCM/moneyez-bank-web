@@ -12,6 +12,12 @@ export enum CATEGORY_TYPE {
   INCOME,
   EXPENSE,
 }
+export enum TRANSACTION_TYPE {
+  DEPOSIT,
+  WITHDRAW,
+  TRANSFER,
+}
+
 export enum CATEGORY_TYPE_TEXT {
   INCOME = "INCOME",
   EXPENSE = "EXPENSE",

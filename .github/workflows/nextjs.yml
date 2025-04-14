@@ -50,7 +50,7 @@ jobs:
       - name: Deploy to VPS
         run: |
           docker pull ducdang03/moneyez-bank-web:latest
-          docker run -d --name moneyez-bank-web -p 3000:3000 ducdang03/moneyez-bank-web:latest
+          docker run -d --name moneyez-bank-web -p 3333:3333 ducdang03/moneyez-bank-web:latest
 
       - name: Verify running containers
         run: docker ps -a

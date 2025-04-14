@@ -1,4 +1,4 @@
-import BankAccountDetail from "../components/BankAccountDetail";
+import { BankAccountDetail } from "../components";
 
 export default function BankAccountPage() {
   return (

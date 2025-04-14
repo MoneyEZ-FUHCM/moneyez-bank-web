@@ -144,9 +144,25 @@ body {
 
 /* antd */
 
+.transaction-modal .ant-modal-content {
+  background-color: transparent;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.transaction-modal .ant-modal-header,
+.transaction-modal .ant-modal-footer {
+  display: none;
+}
+
 .ant-input-number-group .ant-input-number {
   padding: 3px 0 !important;
   border-color: var(--c-primary);
+}
+
+.ant-input-number-outlined {
+  border-color: var(--c-primary) !important;
 }
 
 .custom-antd-footer .ant-modal-footer {

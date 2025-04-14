@@ -15,6 +15,12 @@ const accountManagementApi = apiSlice.injectEndpoints({
         transformCommonResponse<BankAccount>(response),
       providesTags: ["Account"],
     }),
+    getAccountListAll: builder.query({
+      query: () => ({
+        url: `/accounts/all`,
+        method: HTTP_METHOD.GET,
+      }),
+    }),
     createAccount: builder.mutation({
       query: (payload) => ({
         url: "/accounts/admin",
@@ -35,6 +41,7 @@ const accountManagementApi = apiSlice.injectEndpoints({
         url: `/accounts/${payload}`,
         method: HTTP_METHOD.GET,
       }),
+      providesTags: ["Transaction"],
     }),
   }),
 });
@@ -44,6 +51,7 @@ export const {
   useCreateAccountMutation,
   useDeleteAccountMutation,
   useGetDetailBankAccountQuery,
+  useGetAccountListAllQuery,
 } = accountManagementApi;
 
 export default accountManagementApi;

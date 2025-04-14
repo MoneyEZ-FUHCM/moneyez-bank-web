@@ -39,7 +39,7 @@ function getItem(
 
 const items: MenuItem[] = [
   getItem(
-    SIDE_BAR.STATISTIC,
+    SIDE_BAR.MANAGE_BANK,
     SIDE_BAR.POSITION_1,
     <BankOutlined />,
     undefined,

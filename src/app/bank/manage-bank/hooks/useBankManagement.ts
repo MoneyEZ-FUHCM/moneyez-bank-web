@@ -1,31 +1,31 @@
 "use client";
 
-import { TOAST_STATUS } from "@/enums/globals";
+import { TOAST_STATUS, TRANSACTION_TYPE } from "@/enums/globals";
 import { COMMON_CONSTANT } from "@/helpers/constants/common";
 import { formatCurrency } from "@/helpers/libs/utils";
 import { showToast } from "@/hooks/useShowToast";
 import {
   useCreateAccountMutation,
   useDeleteAccountMutation,
+  useGetAccountListAllQuery,
   useGetAccountListQuery,
+  useGetDetailBankAccountQuery,
 } from "@/services/account";
 import { useGetUserListQuery } from "@/services/admin/user";
 import {
   useCreateTransactionDepositMutation,
+  useCreateTransactionTransferMutation,
   useCreateTransactionWithDrawMutation,
+  useGetTransactionListQuery,
 } from "@/services/transaction";
 import { BankAccount } from "@/types/bankAccount.types";
 import { UserFilter } from "@/types/user.types";
 import { Form, TablePaginationConfig } from "antd";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { SetStateAction, useEffect, useMemo, useState } from "react";
 
-const transactionTypes = {
-  DEPOSIT: "DEPOSIT",
-  WITHDRAW: "WITHDRAW",
-};
-
 const useBankManagement = () => {
+  const { id } = useParams();
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [selectedUser, setSelectedUser] = useState<UserFilter>();
@@ -34,7 +34,9 @@ const useBankManagement = () => {
   const [transactions, setTransactions] = useState({});
   const [isTransactionModalVisible, setIsTransactionModalVisible] =
     useState(false);
-  const [transactionType, setTransactionType] = useState(null);
+  const [transactionType, setTransactionType] = useState<
+    TRANSACTION_TYPE.DEPOSIT | TRANSACTION_TYPE.WITHDRAW
+  >();
   const [transactionForm] = Form.useForm();
   const [form] = Form.useForm();
   const [inputValue, setInputValue] = useState("");
@@ -46,6 +48,12 @@ const useBankManagement = () => {
   });
 
   const {
+    data: accountDetail,
+    isLoading: isLoadingAccountDetail,
+    refetch: refetchAccountDetail,
+  } = useGetDetailBankAccountQuery(id, { skip: !id });
+
+  const {
     data: accountList,
     isLoading: isLoadingAccountList,
     refetch: refetchAccountList,
@@ -54,6 +62,17 @@ const useBankManagement = () => {
     PageSize: pageSize,
     search: searchQuery || "",
   });
+  const { data: accountListAll, isLoading: isLoadingAccountListAll } =
+    useGetAccountListAllQuery({});
+
+  const { data: transactionList } = useGetTransactionListQuery(
+    {
+      accountId: id,
+      PageIndex: 1,
+      PageSize: 100,
+    },
+    { skip: !id },
+  );
 
   const { SYSTEM_ERROR } = COMMON_CONSTANT;
 
@@ -61,6 +80,7 @@ const useBankManagement = () => {
   const [createAccount] = useCreateAccountMutation();
   const [createTransactionDeposit] = useCreateTransactionDepositMutation();
   const [createTransactionWithDraw] = useCreateTransactionWithDrawMutation();
+  const [createTransactionTransfer] = useCreateTransactionTransferMutation();
 
   const router = useRouter();
 
@@ -80,6 +100,15 @@ const useBankManagement = () => {
   }, [accountList]);
 
   const users = userList && userList?.items;
+
+  const accountListFilter =
+    accountListAll &&
+    accountListAll?.data &&
+    accountListAll?.data?.length > 0 &&
+    accountListAll?.data?.filter(
+      (account: BankAccount) =>
+        account.accountNumber !== selectedAccount?.accountNumber,
+    );
 
   const handleDeleteAccount = async (payload: string) => {
     try {
@@ -122,44 +151,62 @@ const useBankManagement = () => {
   const handleTransaction = async (values: {
     amount: number;
     description: string;
+    destinationAccountNumber: string;
+    destinationBank: string;
   }) => {
-    const { amount, description } = values;
+    const { amount, description, destinationAccountNumber } = values;
 
     const payload = {
-      accountId: selectedAccount?.id,
+      accountId: selectedAccount?.id || id,
       amount,
-      description:
-        description ||
-        (transactionType === transactionTypes.DEPOSIT
-          ? "Nạp tiền"
-          : "Rút tiền"),
+      description,
     };
+
+    const transferPayload = {
+      sourceAccountId: selectedAccount?.id || id,
+      destinationBank: "EZB",
+      destinationAccountNumber,
+      amount,
+      description,
+    };
+
     try {
-      if (transactionType === transactionTypes.DEPOSIT) {
+      if (transactionType === TRANSACTION_TYPE.DEPOSIT) {
         await createTransactionDeposit(payload).unwrap();
         showToast(
           TOAST_STATUS.SUCCESS,
           `Chuyển thành công ${formatCurrency(amount)} đến số tài khoản ${selectedAccount?.accountNumber}`,
           4000,
         );
-      } else {
+      } else if (transactionType === TRANSACTION_TYPE.WITHDRAW) {
         await createTransactionWithDraw(payload).unwrap();
         showToast(
           TOAST_STATUS.SUCCESS,
           `Rút thành công ${formatCurrency(amount)} từ số tài khoản ${selectedAccount?.accountNumber}`,
           4000,
         );
+      } else {
+        await createTransactionTransfer(transferPayload).unwrap();
+        showToast(
+          TOAST_STATUS.SUCCESS,
+          `Chuyển thành công ${formatCurrency(amount)} đến số tài khoản ${destinationAccountNumber}`,
+          4000,
+        );
+      }
+      if (id) {
+        await refetchAccountDetail();
       }
       await refetchAccountList();
       setIsTransactionModalVisible(false);
       transactionForm.resetFields();
     } catch (err) {
+      console.log("err", err);
       showToast(TOAST_STATUS.ERROR, SYSTEM_ERROR.SERVER_ERROR);
     }
   };
 
   const showTransactionModal = (
-    type: SetStateAction<null>,
+    type: number,
     account: SetStateAction<BankAccount | undefined>,
   ) => {
     setSelectedAccount(account);
@@ -234,7 +281,11 @@ const useBankManagement = () => {
       isLoadingAccountList,
       accountTotalMoney,
       users,
-      transactionTypes,
+      accountDetail,
+      isLoadingAccountDetail,
+      transactionList,
+      accountListFilter,
+      accountListAll: accountListAll?.data ?? [],
     },
     handler: {
       setPageIndex,

@@ -1,14 +1,15 @@
 "use client";
 
+import { LoadingSectionWrapper } from "@/components";
 import { ButtonCustom } from "@/components/ui/button";
 import { InputCustom } from "@/components/ui/input";
+import { TRANSACTION_TYPE } from "@/enums/globals";
 import { Colors } from "@/helpers/constants/color";
 import { formatCurrency, formatTimestampWithHour } from "@/helpers/libs/utils";
 import { BankAccount } from "@/types/bankAccount.types";
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
-  CloseOutlined,
   CreditCardOutlined,
   DeleteOutlined,
   DollarOutlined,
@@ -16,6 +17,7 @@ import {
   LineChartOutlined,
   PlusOutlined,
   SearchOutlined,
+  SwapOutlined,
   UnorderedListOutlined,
   UserOutlined,
 } from "@ant-design/icons";
@@ -29,7 +31,6 @@ import {
   Form,
   Input,
   InputNumber,
-  Modal,
   Popconfirm,
   Row,
   Select,
@@ -39,15 +40,11 @@ import {
   Tooltip,
   Typography,
 } from "antd";
+import { TransactionModal } from "./components/TransactionModal";
 import { useBankManagement } from "./hooks/useBankManagement";
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
-
-const transactionTypes = {
-  DEPOSIT: "DEPOSIT",
-  WITHDRAW: "WITHDRAW",
-};
 
 const BankManagement = () => {
   const { state, handler } = useBankManagement();
@@ -134,7 +131,7 @@ const BankManagement = () => {
               icon={<ArrowUpOutlined />}
               onClick={() =>
                 handler.showTransactionModal(
-                  transactionTypes.DEPOSIT as any,
+                  TRANSACTION_TYPE.DEPOSIT as any,
                   record,
                 )
               }
@@ -148,10 +145,24 @@ const BankManagement = () => {
               icon={<ArrowDownOutlined />}
               onClick={() =>
                 handler.showTransactionModal(
-                  transactionTypes.WITHDRAW as any,
+                  TRANSACTION_TYPE.WITHDRAW as any,
                   record,
                 )
               }
+            />
+          </Tooltip>
+          <Tooltip title="Chuyển tiền">
+            <Button
+              type="primary"
+              size="small"
+              icon={<SwapOutlined />}
+              onClick={() =>
+                handler.showTransactionModal(
+                  TRANSACTION_TYPE.TRANSFER as any,
+                  record,
+                )
+              }
+              className="border-blue-500 bg-transparent !text-blue-500 hover:!bg-gray-100"
             />
           </Tooltip>
           <Popconfirm
@@ -186,62 +197,43 @@ const BankManagement = () => {
       bordered={false}
       className="min-h-[450px] rounded-lg bg-white shadow-sm"
     >
-      <div className="grid grid-cols-2 gap-4">
-        <Statistic
-          title="Người dùng"
-          value={state.userList?.totalCount || 0}
-          prefix={<CreditCardOutlined className="mr-1 text-green" />}
-          className="rounded-lg border bg-thirdly/30 p-4 shadow-sm"
-        />
-        <Statistic
-          title="Số tiền"
-          value={state.accountTotalMoney || 0}
-          precision={0}
-          suffix="đ"
-          prefix={<DollarOutlined className="mr-1 text-green" />}
-          className="rounded-lg border bg-thirdly/30 p-4 shadow-sm"
-        />
-      </div>
-
-      <div className="mt-6">
-        {/* <div className="mt-3">
-          {accountList && accountList?.items?.length > 0 ? (
-            <Progress
-              percent={percent}
-              status="active"
-              strokeColor={Colors.colors.primary}
-            />
-          ) : (
-            <Empty
-              description="Chưa có hoạt động nào"
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              className="my-4"
-            />
-          )}
-        </div> */}
-      </div>
-
-      <Divider />
-
-      <div>
-        <Title level={5}>
-          <InfoCircleOutlined className="mr-2" />
-          Hướng dẫn sử dụng
-        </Title>
-        <Paragraph className="mt-3">
-          <ul className="list-disc pl-6">
-            <li className="mb-2">
-              Tạo tài khoản mới bằng cách điền thông tin bên phải
-            </li>
-            <li className="mb-2">
-              Quản lý tài khoản với các thao tác nạp/rút tiền
-            </li>
-            <li className="mb-2">
-              Xem chi tiết lịch sử giao dịch của mỗi tài khoản
-            </li>
-          </ul>
-        </Paragraph>
-      </div>
+      <LoadingSectionWrapper isLoading={state.isLoadingAccountDetail}>
+        <div className="grid grid-cols-2 gap-4">
+          <Statistic
+            title="Người dùng"
+            value={state.userList?.totalCount || 0}
+            prefix={<UserOutlined className="mr-1 text-green" />}
+            className="rounded-lg border bg-thirdly/30 p-4 shadow-sm"
+          />
+          <Statistic
+            title="Số tài khoản"
+            value={state.accountList?.totalCount || 0}
+            precision={0}
+            prefix={<CreditCardOutlined className="mr-1 text-green" />}
+            className="rounded-lg border bg-thirdly/30 p-4 shadow-sm"
+          />
+        </div>
+        <Divider />
+        <div>
+          <Title level={5}>
+            <InfoCircleOutlined className="mr-2" />
+            Hướng dẫn sử dụng
+          </Title>
+          <Paragraph className="mt-3">
+            <ul className="list-disc pl-6">
+              <li className="mb-2">
+                Tạo tài khoản mới bằng cách điền thông tin bên phải
+              </li>
+              <li className="mb-2">
+                Quản lý tài khoản với các thao tác nạp/rút tiền
+              </li>
+              <li className="mb-2">
+                Xem chi tiết lịch sử giao dịch của mỗi tài khoản
+              </li>
+            </ul>
+          </Paragraph>
+        </div>
+      </LoadingSectionWrapper>
     </Card>
   );
 
@@ -323,6 +315,7 @@ const BankManagement = () => {
                 ]}
               >
                 <Input
+                  prefix={<CreditCardOutlined className="mr-1 text-gray-400" />}
                   type="text"
                   placeholder="Nhập số tài khoản"
                   maxLength={12}
@@ -356,6 +349,7 @@ const BankManagement = () => {
                 initialValue={0}
               >
                 <InputNumber<number>
+                  prefix={<DollarOutlined className="mr-1 text-gray-400" />}
                   className="w-full"
                   min={0}
                   step={100000}
@@ -375,7 +369,7 @@ const BankManagement = () => {
                 />
               </Form.Item>
               <Form.Item>
-                <ButtonCustom className="mx-auto mt-5 flex h-11 w-36 items-center justify-center gap-0.5 rounded-[5px] bg-primary px-6 tracking-wider text-superlight hover:bg-primary/80">
+                <ButtonCustom className="mx-auto mt-5 flex h-11 w-44 items-center justify-center gap-0.5 rounded-[5px] bg-primary tracking-wider text-superlight hover:bg-primary/80">
                   <PlusOutlined className="mr-1" /> Tạo Tài Khoản
                 </ButtonCustom>
               </Form.Item>
@@ -443,187 +437,20 @@ const BankManagement = () => {
     </div>
   );
 
-  const renderTransactionModal = () => (
-    <Modal
-      title={
-        <div className="flex items-center py-1 text-lg font-semibold">
-          {state.transactionType === transactionTypes.DEPOSIT ? (
-            <>
-              <div className="bg-green-100 flex h-8 w-8 items-center justify-center rounded-full">
-                <ArrowUpOutlined className="text-lg text-green" />
-              </div>
-              <span>Nạp tiền</span>
-            </>
-          ) : (
-            <>
-              <div className="bg-red-100 flex h-8 w-8 items-center justify-center rounded-full">
-                <ArrowDownOutlined className="text-lg text-red" />
-              </div>
-              <span>Rút tiền</span>
-            </>
-          )}
-        </div>
-      }
-      open={state.isTransactionModalVisible}
-      footer={null}
-      onCancel={() => handler.setIsTransactionModalVisible(false)}
-      centered
-      className="transaction-modal"
-      width={500}
-      closeIcon={<CloseOutlined className="text-gray-500" />}
-    >
-      {state.selectedAccount && (
-        <>
-          <Card
-            className="mb-6 overflow-hidden rounded-xl shadow-sm"
-            bordered={false}
-            style={{
-              background:
-                state.transactionType === transactionTypes.DEPOSIT
-                  ? "linear-gradient(145deg, #f0f9f0 0%, #e6f7e6 100%)"
-                  : "linear-gradient(145deg, #fff5f5 0%, #fee2e2 100%)",
-            }}
-            bodyStyle={{ padding: "16px 20px" }}
-          >
-            <div className="mb-4 grid grid-cols-2 gap-6">
-              <div>
-                <Text className="mb-2 block font-medium text-gray-600">
-                  Tài khoản:
-                </Text>
-                <Text className="block text-base font-semibold">
-                  {state.selectedAccount?.accountNumber}
-                </Text>
-              </div>
-              <div>
-                <Text className="mb-2 block font-medium text-gray-600">
-                  Chủ tài khoản:
-                </Text>
-                <Text className="block text-base font-semibold">
-                  {state.selectedAccount?.accountHolder}
-                </Text>
-              </div>
-            </div>
-            <Divider className="my-1" />
-            <div className="mt-3">
-              <Text className="mb-2 block font-medium text-gray-600">
-                Số dư hiện tại:
-              </Text>
-              <Text
-                className="block text-xl font-bold"
-                style={{
-                  color:
-                    state.selectedAccount?.balance > 0 ? "#16a34a" : "#dc2626",
-                }}
-              >
-                {formatCurrency(state.selectedAccount?.balance)}
-              </Text>
-            </div>
-          </Card>
-
-          <Form
-            form={state.transactionForm}
-            layout="vertical"
-            onFinish={handler.handleTransaction}
-            className="transaction-form"
-          >
-            <Form.Item
-              name="amount"
-              required
-              label={<span className="font-medium text-gray-700">Số tiền</span>}
-              rules={[
-                { required: true, message: "Vui lòng nhập số tiền" },
-                {
-                  validator: (_, value) => {
-                    if (value <= 0) {
-                      return Promise.reject("Số tiền phải lớn hơn 0");
-                    }
-                    if (
-                      state.transactionType === transactionTypes.WITHDRAW &&
-                      value > (state.selectedAccount?.balance ?? 0)
-                    ) {
-                      return Promise.reject(
-                        "Số dư không đủ để thực hiện giao dịch này",
-                      );
-                    }
-                    return Promise.resolve();
-                  },
-                },
-              ]}
-            >
-              <InputNumber<number>
-                className="w-full"
-                min={0}
-                step={100000}
-                precision={0}
-                formatter={(value) =>
-                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                }
-                parser={(value) =>
-                  parseFloat((value ?? "").replace(/\$\s?|(,*)/g, "")) || 0
-                }
-                addonAfter="đ"
-                onKeyPress={(e) => {
-                  if (!/[0-9]/.test(e.key)) {
-                    e.preventDefault();
-                  }
-                }}
-              />
-            </Form.Item>
-            <Form.Item
-              name="description"
-              label={<span className="font-medium text-gray-700">Mô tả</span>}
-            >
-              <Input.TextArea
-                placeholder="Nhập mô tả giao dịch (không bắt buộc)"
-                rows={3}
-                className="rounded-lg border focus-within:!border-primary hover:!border-primary"
-              />
-            </Form.Item>
-            <Form.Item className="mb-0">
-              <div className="mt-5 flex justify-end gap-3">
-                <Button
-                  onClick={() => handler.setIsTransactionModalVisible(false)}
-                  size="large"
-                  className="min-w-24 rounded-lg border-gray-300 font-medium hover:bg-gray-50 hover:text-gray-700"
-                >
-                  Hủy
-                </Button>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  size="large"
-                  className={`min-w-32 rounded-lg font-medium ${
-                    state.transactionType === transactionTypes.DEPOSIT
-                      ? "border-green bg-green hover:!bg-green"
-                      : "border-red bg-red hover:!bg-red"
-                  }`}
-                  icon={
-                    state.transactionType === transactionTypes.DEPOSIT ? (
-                      <ArrowUpOutlined className="mr-1" />
-                    ) : (
-                      <ArrowDownOutlined className="mr-1" />
-                    )
-                  }
-                >
-                  Xác nhận{" "}
-                  {state.transactionType === transactionTypes.DEPOSIT
-                    ? "nạp"
-                    : "rút"}
-                </Button>
-              </div>
-            </Form.Item>
-          </Form>
-        </>
-      )}
-    </Modal>
-  );
-
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
-      <main className="flex-1 p-6">
+      <section className="flex-1 p-6">
         {renderAccountsView()}
-        {renderTransactionModal()}
-      </main>
+        <TransactionModal
+          form={state.transactionForm}
+          isVisible={state.isTransactionModalVisible}
+          selectedAccount={state.selectedAccount as BankAccount}
+          transactionType={state.transactionType as any}
+          onClose={() => handler.setIsTransactionModalVisible(false)}
+          onFinish={handler.handleTransaction}
+          bankOptions={state.accountListFilter as any}
+        />
+      </section>
     </div>
   );
 };
