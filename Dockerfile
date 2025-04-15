@@ -25,7 +25,7 @@ COPY public ./public
 COPY next.config.mjs ./
 COPY *.d.ts ./
 COPY package.json yarn.lock* ./
-COPY .env .env.production
+COPY .env ./.env.production
 
 RUN yarn build
 
