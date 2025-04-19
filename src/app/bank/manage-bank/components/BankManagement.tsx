@@ -40,6 +40,7 @@ import {
   Tooltip,
   Typography,
 } from "antd";
+import { BANK_MANAGEMENT_CONSTANT } from "../bank.constants";
 import { useBankManagement } from "../hooks/useBankManagement";
 import { TransactionModal } from "./TransactionModal";
 
@@ -48,20 +49,21 @@ const { Option } = Select;
 
 const BankManagement = () => {
   const { state, handler } = useBankManagement();
+  const { FORM_NAME } = BANK_MANAGEMENT_CONSTANT;
 
   const accountColumns = [
     {
       title: "STT",
-      dataIndex: "index",
-      key: "index",
+      dataIndex: FORM_NAME.INDEX,
+      key: FORM_NAME.INDEX,
       width: "5%",
       render: (_: any, _record: any, index: number) =>
         (state.pageIndex - 1) * state.pageSize + index + 1,
     },
     {
       title: "Số tài khoản",
-      dataIndex: "accountNumber",
-      key: "accountNumber",
+      dataIndex: FORM_NAME.ACCOUNT_NUMBER,
+      key: FORM_NAME.ACCOUNT_NUMBER,
       width: "20%",
       render: (text: string) => (
         <Text
@@ -75,8 +77,8 @@ const BankManagement = () => {
     },
     {
       title: "Chủ tài khoản",
-      dataIndex: "accountHolder",
-      key: "userName",
+      dataIndex: FORM_NAME.ACCOUNT_HOLDER,
+      key: FORM_NAME.ACCOUNT_HOLDER,
       width: "28%",
       render: (text: string, record: any) => (
         <Space>
@@ -87,14 +89,14 @@ const BankManagement = () => {
     },
     {
       title: "Số dư hiện tại",
-      dataIndex: "balance",
-      key: "balance",
+      dataIndex: FORM_NAME.BALANCE,
+      key: FORM_NAME.BALANCE,
       width: "17%",
       render: (balance: number) => (
         <Text
           strong
           style={{
-            color: balance > 0 ? Colors.colors.green : Colors.colors.red,
+            color: balance >= 0 ? Colors.colors.green : Colors.colors.red,
           }}
         >
           {formatCurrency(balance)}
@@ -103,15 +105,15 @@ const BankManagement = () => {
     },
     {
       title: "Ngày tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
+      dataIndex: FORM_NAME.CREATED_AT,
+      key: FORM_NAME.CREATED_AT,
       width: "20%",
       render: (date: string | number | Date) =>
         formatTimestampWithHour(date as string),
     },
     {
       title: "Chức năng",
-      key: "actions",
+      key: FORM_NAME.ACTIONS,
       width: "10%",
       render: (_: any, record: BankAccount) => (
         <Space size="small">
