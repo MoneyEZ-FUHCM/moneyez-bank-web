@@ -8,5 +8,6 @@ export const Colors = {
     green: "#00a010",
     superlight: "#f6f9f4",
     gray: "#f9fafb",
+    blue: "#3b82f6",
   },
 };

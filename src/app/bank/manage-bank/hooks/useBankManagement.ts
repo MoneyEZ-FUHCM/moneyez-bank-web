@@ -76,6 +76,8 @@ const useBankManagement = () => {
 
   const { SYSTEM_ERROR } = COMMON_CONSTANT;
 
+  console.log("check transactionList", transactionList);
+
   const [deleteAccount] = useDeleteAccountMutation();
   const [createAccount] = useCreateAccountMutation();
   const [createTransactionDeposit] = useCreateTransactionDepositMutation();
@@ -261,6 +263,10 @@ const useBankManagement = () => {
     setIsTransactionModalVisible(false);
   };
 
+  const handleBackToAccount = () => {
+    router.push("/bank/manage-bank");
+  };
+
   return {
     state: {
       pageIndex,
@@ -312,6 +318,7 @@ const useBankManagement = () => {
       handleInputKeyDown,
       handleSetRandomAccountNumber,
       handleCloseTransactionModal,
+      handleBackToAccount,
     },
   };
 };

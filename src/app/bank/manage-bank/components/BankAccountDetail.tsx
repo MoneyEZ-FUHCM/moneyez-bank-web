@@ -2,7 +2,7 @@
 
 import { LoadingSectionWrapper } from "@/components";
 import { ButtonCustom } from "@/components/ui/button";
-import { TRANSACTION_TYPE } from "@/enums/globals";
+import { TRANSACTION_STATUS_TEXT, TRANSACTION_TYPE } from "@/enums/globals";
 import { Colors } from "@/helpers/constants/color";
 import {
   formatCurrency,
@@ -10,6 +10,7 @@ import {
   formatTimestampWithHour,
 } from "@/helpers/libs/utils";
 import { BankAccount } from "@/types/bankAccount.types";
+import { Transaction } from "@/types/transaction.types";
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
@@ -31,6 +32,8 @@ import {
   Typography,
 } from "antd";
 import { useRouter } from "next/navigation";
+import { BANK_MANAGEMENT_CONSTANT } from "../bank.constants";
+import { TEXT_TRANSLATE } from "../bank.translate";
 import { useBankManagement } from "../hooks/useBankManagement";
 import { TransactionModal } from "./TransactionModal";
 
@@ -38,96 +41,131 @@ const BankAccountDetail = () => {
   const router = useRouter();
   const { state, handler } = useBankManagement();
   const { Text } = Typography;
-
-  const backToAccounts = () => {
-    router.push("/bank/manage-bank");
-  };
+  const { FORM_NAME } = BANK_MANAGEMENT_CONSTANT;
 
   const transactionColumns = [
     {
       title: "STT",
-      dataIndex: "index",
-      key: "index",
+      dataIndex: FORM_NAME.INDEX,
+      key: FORM_NAME.INDEX,
       render: (_: any, _record: any, index: number) =>
         (state.pageIndex - 1) * state.pageSize + index + 1,
     },
     {
-      title: "Mô tả",
-      dataIndex: "description",
-      key: "description",
+      title: TEXT_TRANSLATE.TITLE.DESCRIPTION,
+      dataIndex: FORM_NAME.DESCRIPTION,
+      key: FORM_NAME.DESCRIPTION,
     },
     {
-      title: "Số tiền",
-      dataIndex: "amount",
-      key: "amount",
-      render: (amount: number, record: any) => {
+      title: TEXT_TRANSLATE.TITLE.RECEIVER,
+      key: FORM_NAME.DESTINATION_ACCOUNT_INFO,
+      render: (_: any, record: Transaction) => {
+        if (record.type === TRANSACTION_TYPE.TRANSFER) {
+          return (
+            <div className="flex gap-1">
+              <strong className="text-primary">
+                {record.destinationAccountHolder}
+              </strong>
+              -<span>{record.destinationAccountNumber}</span>
+            </div>
+          );
+        }
+        return null;
+      },
+    },
+    {
+      title: TEXT_TRANSLATE.TITLE.TRANSACTION_DIRECTION,
+      dataIndex: FORM_NAME.TRANSACTION_DIRECTION,
+      key: FORM_NAME.TRANSACTION_DIRECTION,
+      render: (transactionDirection: number, record: any) => {
         let color = Colors.colors.red;
-        let prefix = "-";
-
         switch (record.type) {
           case TRANSACTION_TYPE.DEPOSIT:
             color = Colors.colors.green;
-            prefix = "+";
             break;
           case TRANSACTION_TYPE.TRANSFER:
             color = Colors.colors.red;
-            prefix = "-";
             break;
           case TRANSACTION_TYPE.WITHDRAW:
           default:
             color = Colors.colors.red;
-            prefix = "-";
         }
         return (
           <Text strong style={{ color }}>
-            {prefix}
-            {formatCurrency(amount)}
+            {formatCurrency(transactionDirection)}
           </Text>
         );
       },
     },
     {
-      title: "Loại giao dịch",
-      dataIndex: "type",
-      key: "type",
+      title: TEXT_TRANSLATE.TITLE.TRANSACTION_TYPE,
+      dataIndex: FORM_NAME.TYPE,
+      key: FORM_NAME.TYPE,
       render: (type: number) => {
         let color = "red";
-        let label = "Rút tiền";
+        let label = TEXT_TRANSLATE.BUTTON.WITHDRAW;
 
         switch (type) {
           case TRANSACTION_TYPE.DEPOSIT:
-            color = "blue";
-            label = "Nạp tiền";
+            color = "green";
+            label = TEXT_TRANSLATE.BUTTON.DEPOSIT;
             break;
           case TRANSACTION_TYPE.TRANSFER:
-            color = "orange";
-            label = "Chuyển tiền";
+            color = "blue";
+            label = TEXT_TRANSLATE.BUTTON.TRANSFER;
             break;
           case TRANSACTION_TYPE.WITHDRAW:
           default:
             color = "red";
-            label = "Rút tiền";
+            label = TEXT_TRANSLATE.BUTTON.WITHDRAW;
         }
-
         return <Tag color={color}>{label}</Tag>;
       },
     },
     {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
+      title: TEXT_TRANSLATE.TITLE.TRANSACTION_STATUS,
+      dataIndex: FORM_NAME.STATUS,
+      key: FORM_NAME.STATUS,
       render: (status: string) => (
-        <Tag color={status === "SUCCESS" ? "green" : "red"}>
-          {status === "SUCCESS" ? "Thành công" : "Thất bại"}
+        <Tag
+          color={status === TRANSACTION_STATUS_TEXT.SUCCESS ? "green" : "red"}
+        >
+          {status === TRANSACTION_STATUS_TEXT.SUCCESS
+            ? TEXT_TRANSLATE.TITLE.SUCCESS_STATUS
+            : TEXT_TRANSLATE.TITLE.FAILURE_STATUS}
         </Tag>
       ),
     },
     {
-      title: "Ngày giao dịch",
-      dataIndex: "transactionDate",
-      key: "transactionDate",
+      title: TEXT_TRANSLATE.TITLE.TRANSACTION_DATE,
+      dataIndex: FORM_NAME.TRANSACTION_DATE,
+      key: FORM_NAME.TRANSACTION_DATE,
       render: (transactionDate: string) =>
         formatTimestampWithHour(transactionDate),
+    },
+  ];
+
+  const transactionButton = [
+    {
+      type: TRANSACTION_TYPE.DEPOSIT,
+      label: TEXT_TRANSLATE.BUTTON.DEPOSIT,
+      icon: <ArrowUpOutlined />,
+      bg: "bg-green",
+      hover: "hover:bg-green/60",
+    },
+    {
+      type: TRANSACTION_TYPE.WITHDRAW,
+      label: TEXT_TRANSLATE.BUTTON.WITHDRAW,
+      icon: <ArrowDownOutlined />,
+      bg: "bg-red",
+      hover: "hover:bg-red/60",
+    },
+    {
+      type: TRANSACTION_TYPE.TRANSFER,
+      label: TEXT_TRANSLATE.BUTTON.TRANSFER,
+      icon: <SwapOutlined />,
+      bg: "bg-blue-500",
+      hover: "hover:bg-blue-400",
     },
   ];
 
@@ -140,16 +178,16 @@ const BankAccountDetail = () => {
               {
                 title: (
                   <span
-                    onClick={backToAccounts}
+                    onClick={handler.handleBackToAccount}
                     className="flex cursor-pointer items-center"
                   >
-                    Danh sách tài khoản
+                    {TEXT_TRANSLATE.TITLE.ACCOUNT_LIST}
                   </span>
                 ),
               },
               {
                 title: state.accountDetail?.data?.accountNumber
-                  ? `Tài khoản ${state.accountDetail?.data?.accountNumber}`
+                  ? `${TEXT_TRANSLATE.TITLE.ACCOUNT} ${state.accountDetail?.data?.accountNumber}`
                   : "",
               },
             ]}
@@ -162,47 +200,29 @@ const BankAccountDetail = () => {
               <div className="flex items-center gap-2">
                 <CreditCardOutlined />
                 <span>
-                  Chi tiết tài khoản {state.accountDetail?.data?.userName}
+                  {TEXT_TRANSLATE.TITLE.ACCOUNT_DETAIL}{" "}
+                  {state.accountDetail?.data?.userName}
                 </span>
               </div>
             }
             bordered={false}
             className="rounded-lg bg-white shadow-sm"
             extra={
-              <Space>
-                <ButtonCustom
-                  onClick={() =>
-                    handler.showTransactionModal(
-                      TRANSACTION_TYPE.DEPOSIT as any,
-                      state.accountDetail?.data,
-                    )
-                  }
-                  className="flex w-[100px] items-center gap-2 bg-green px-5 text-white hover:bg-green/75"
-                >
-                  <ArrowUpOutlined /> <span>Nạp tiền</span>
-                </ButtonCustom>
-                <ButtonCustom
-                  onClick={() =>
-                    handler.showTransactionModal(
-                      TRANSACTION_TYPE.WITHDRAW as any,
-                      state.accountDetail?.data,
-                    )
-                  }
-                  className="flex w-[100px] items-center gap-2 bg-red px-5 text-white hover:bg-red/75"
-                >
-                  <ArrowDownOutlined /> <span>Rút tiền</span>
-                </ButtonCustom>
-                <ButtonCustom
-                  onClick={() =>
-                    handler.showTransactionModal(
-                      TRANSACTION_TYPE.TRANSFER as any,
-                      state.accountDetail?.data,
-                    )
-                  }
-                  className="hover:bg-blue/75 flex min-w-[100px] items-center gap-2 bg-blue-500 px-5 text-white"
-                >
-                  <SwapOutlined /> <span>Chuyển tiền</span>
-                </ButtonCustom>
+              <Space className="flex flex-wrap gap-4">
+                {transactionButton.map(({ type, label, icon, bg, hover }) => (
+                  <ButtonCustom
+                    key={type}
+                    onClick={() =>
+                      handler.showTransactionModal(
+                        type as any,
+                        state.accountDetail?.data,
+                      )
+                    }
+                    className={`flex min-w-[120px] items-center justify-center gap-2 rounded-xl ${bg} px-6 py-2 text-white shadow-md transition-all ${hover}`}
+                  >
+                    {icon} <span>{label}</span>
+                  </ButtonCustom>
+                ))}
               </Space>
             }
           >
@@ -269,7 +289,7 @@ const BankAccountDetail = () => {
             title={
               <div className="flex items-center gap-2">
                 <TransactionOutlined />
-                <span>Lịch sử giao dịch</span>
+                <span>{TEXT_TRANSLATE.TITLE.TRANSACTION_HISTORY}</span>
               </div>
             }
             bordered={false}
@@ -278,7 +298,8 @@ const BankAccountDetail = () => {
               <div className="flex items-center text-sm text-gray-500">
                 <Tooltip title="Hiển thị tất cả các giao dịch của tài khoản này">
                   <InfoCircleOutlined className="mr-1" />
-                  {state.transactionList?.totalCount} giao dịch
+                  {state.transactionList?.totalCount}{" "}
+                  {TEXT_TRANSLATE.TITLE.TRANSACTION}
                 </Tooltip>
               </div>
             }
