@@ -41,6 +41,7 @@ import {
   Typography,
 } from "antd";
 import { BANK_MANAGEMENT_CONSTANT } from "../bank.constants";
+import { TEXT_TRANSLATE } from "../bank.translate";
 import { useBankManagement } from "../hooks/useBankManagement";
 import { TransactionModal } from "./TransactionModal";
 
@@ -223,15 +224,9 @@ const BankManagement = () => {
           </Title>
           <Paragraph className="mt-3">
             <ul className="list-disc pl-6">
-              <li className="mb-2">
-                Tạo tài khoản mới bằng cách điền thông tin bên phải
-              </li>
-              <li className="mb-2">
-                Quản lý tài khoản với các thao tác nạp/rút tiền
-              </li>
-              <li className="mb-2">
-                Xem chi tiết lịch sử giao dịch của mỗi tài khoản
-              </li>
+              <li className="mb-2">{TEXT_TRANSLATE.TITLE.INSTRUCTION_1}</li>
+              <li className="mb-2">{TEXT_TRANSLATE.TITLE.INSTRUCTION_2}</li>
+              <li className="mb-2">{TEXT_TRANSLATE.TITLE.INSTRUCTION_3}</li>
             </ul>
           </Paragraph>
         </div>

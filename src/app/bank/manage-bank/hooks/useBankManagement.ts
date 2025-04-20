@@ -18,6 +18,7 @@ import {
   useCreateTransactionWithDrawMutation,
   useGetTransactionListQuery,
 } from "@/services/transaction";
+import { useGetWebHookConfigListQuery } from "@/services/webhook";
 import { BankAccount } from "@/types/bankAccount.types";
 import { UserFilter } from "@/types/user.types";
 import { Form, TablePaginationConfig } from "antd";
@@ -75,8 +76,6 @@ const useBankManagement = () => {
   );
 
   const { SYSTEM_ERROR } = COMMON_CONSTANT;
-
-  console.log("check transactionList", transactionList);
 
   const [deleteAccount] = useDeleteAccountMutation();
   const [createAccount] = useCreateAccountMutation();

@@ -31,14 +31,13 @@ import {
   Tooltip,
   Typography,
 } from "antd";
-import { useRouter } from "next/navigation";
 import { BANK_MANAGEMENT_CONSTANT } from "../bank.constants";
 import { TEXT_TRANSLATE } from "../bank.translate";
 import { useBankManagement } from "../hooks/useBankManagement";
 import { TransactionModal } from "./TransactionModal";
+import WebHookTable from "./WebHookTable";
 
 const BankAccountDetail = () => {
-  const router = useRouter();
   const { state, handler } = useBankManagement();
   const { Text } = Typography;
   const { FORM_NAME } = BANK_MANAGEMENT_CONSTANT;
@@ -321,7 +320,7 @@ const BankAccountDetail = () => {
             </>
           </Card>
         </div>
-
+        <WebHookTable />
         <TransactionModal
           isVisible={state.isTransactionModalVisible}
           onClose={() => handler.setIsTransactionModalVisible(false)}
