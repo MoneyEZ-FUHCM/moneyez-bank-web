@@ -31,14 +31,13 @@ import {
   Tooltip,
   Typography,
 } from "antd";
-import { useRouter } from "next/navigation";
 import { BANK_MANAGEMENT_CONSTANT } from "../bank.constants";
 import { TEXT_TRANSLATE } from "../bank.translate";
 import { useBankManagement } from "../hooks/useBankManagement";
 import { TransactionModal } from "./TransactionModal";
+import WebHookTable from "./WebHookTable";
 
 const BankAccountDetail = () => {
-  const router = useRouter();
   const { state, handler } = useBankManagement();
   const { Text } = Typography;
   const { FORM_NAME } = BANK_MANAGEMENT_CONSTANT;
@@ -249,12 +248,12 @@ const BankAccountDetail = () => {
                     suffix="VND"
                     valueStyle={{
                       color:
-                        state.accountDetail?.data?.balance > 0
+                        state.accountDetail?.data?.balance >= 0
                           ? Colors.colors.green
                           : Colors.colors.red,
                     }}
                     prefix={
-                      state.accountDetail?.data?.balance > 0 ? (
+                      state.accountDetail?.data?.balance >= 0 ? (
                         <ArrowUpOutlined className="mr-1" />
                       ) : (
                         <ArrowDownOutlined className="mr-1" />
@@ -321,7 +320,7 @@ const BankAccountDetail = () => {
             </>
           </Card>
         </div>
-
+        <WebHookTable />
         <TransactionModal
           isVisible={state.isTransactionModalVisible}
           onClose={() => handler.setIsTransactionModalVisible(false)}

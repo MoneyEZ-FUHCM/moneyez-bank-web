@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge";
 import CryptoJS from "crypto-js";
 import moment from "moment";
 import { FormInstance } from "antd";
+import { ReactNode } from "react";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
