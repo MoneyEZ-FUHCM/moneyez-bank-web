@@ -1,4 +1,6 @@
 export interface WebhookConfig {
+  accountNumber: string;
+  accountHolder: string;
   url: string;
   type: number;
   secret: string;

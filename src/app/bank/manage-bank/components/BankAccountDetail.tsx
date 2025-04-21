@@ -248,12 +248,12 @@ const BankAccountDetail = () => {
                     suffix="VND"
                     valueStyle={{
                       color:
-                        state.accountDetail?.data?.balance > 0
+                        state.accountDetail?.data?.balance >= 0
                           ? Colors.colors.green
                           : Colors.colors.red,
                     }}
                     prefix={
-                      state.accountDetail?.data?.balance > 0 ? (
+                      state.accountDetail?.data?.balance >= 0 ? (
                         <ArrowUpOutlined className="mr-1" />
                       ) : (
                         <ArrowDownOutlined className="mr-1" />

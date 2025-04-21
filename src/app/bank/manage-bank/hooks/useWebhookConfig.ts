@@ -1,5 +1,4 @@
 import { useGetWebHookConfigListQuery } from "@/services/webhook";
-import { WebhookConfig } from "@/types/webHook.types";
 import { TablePaginationConfig } from "antd";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -18,8 +17,6 @@ const useWebhookConfig = () => {
     { skip: !id },
   );
 
-  console.log("cjeck webHookConfigList", webHookConfigList?.data);
-
   const handlePageChange = (pagination: TablePaginationConfig) => {
     setPageIndex(pagination.current ?? 1);
     setPageSize(pagination.pageSize ?? 10);
@@ -29,7 +26,7 @@ const useWebhookConfig = () => {
     state: {
       pageIndex,
       pageSize,
-      webHookConfigList: webHookConfigList?.data as WebhookConfig[],
+      webHookConfigList,
     },
     handler: {
       handlePageChange,

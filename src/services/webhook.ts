@@ -1,5 +1,7 @@
 import { COMMON_CONSTANT } from "@/helpers/constants/common";
 import apiSlice from "@/redux/slices/apiSlice";
+import { transformCommonResponse } from "@/types/common.type";
+import { WebhookConfig } from "@/types/webHook.types";
 
 const { HTTP_METHOD } = COMMON_CONSTANT;
 const webHookManagementApi = apiSlice.injectEndpoints({
@@ -9,6 +11,8 @@ const webHookManagementApi = apiSlice.injectEndpoints({
         url: `/webhooks/account/${accountId}?PageIndex=${PageIndex}&PageSize=${PageSize}`,
         method: HTTP_METHOD.GET,
       }),
+      transformResponse: (response) =>
+        transformCommonResponse<WebhookConfig>(response),
       providesTags: ["Webhook"],
     }),
   }),
