@@ -1,4 +1,4 @@
-import { TOAST_STATUS } from "@/enums/globals";
+import { TOAST_STATUS } from "@/helpers/enums/globals";
 import { COMMON_CONSTANT } from "@/helpers/constants/common";
 import { PATH_NAME } from "@/helpers/constants/pathname";
 import apiSlice from "@/redux/slices/apiSlice";

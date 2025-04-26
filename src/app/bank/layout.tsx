@@ -3,7 +3,7 @@
 import Admin from "@/assets/images/logo/avatar_admin.jpg";
 import LogoWeb from "@/assets/images/logo/logo_web.png";
 import { PATH_NAME } from "@/helpers/constants/pathname";
-import { useLogout } from "@/hooks/useLogout";
+import { useLogout } from "@/helpers/hooks/useLogout";
 import { selectUserInfo } from "@/redux/slices/userSlice";
 import { BankOutlined, UserOutlined } from "@ant-design/icons";
 import { FloatButton, Layout, Menu } from "antd";

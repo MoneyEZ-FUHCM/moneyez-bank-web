@@ -2,7 +2,7 @@
 
 import { UploadImage } from "@/components";
 import { CommonForm } from "@/components/common/table/CommonForm";
-import { VALID_ROLE_REQUEST } from "@/enums/globals";
+import { VALID_ROLE_REQUEST } from "@/helpers/enums/globals";
 import { COMMON_CONSTANT } from "@/helpers/constants/common";
 import {
   EnvironmentOutlined,

@@ -1,5 +1,5 @@
 import { formatDate, formatDate2 } from "@/helpers/libs/utils";
-import { UserInfo } from "@/types/user.types";
+import { UserInfo } from "@/helpers/types/user.types";
 import {
   CalendarIcon,
   CheckIcon,

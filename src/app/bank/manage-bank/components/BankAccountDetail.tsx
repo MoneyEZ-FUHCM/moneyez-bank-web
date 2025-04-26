@@ -2,15 +2,18 @@
 
 import { LoadingSectionWrapper } from "@/components";
 import { ButtonCustom } from "@/components/ui/button";
-import { TRANSACTION_STATUS_TEXT, TRANSACTION_TYPE } from "@/enums/globals";
+import {
+  TRANSACTION_STATUS_TEXT,
+  TRANSACTION_TYPE,
+} from "@/helpers/enums/globals";
 import { Colors } from "@/helpers/constants/color";
 import {
   formatCurrency,
   formatDate,
   formatTimestampWithHour,
 } from "@/helpers/libs/utils";
-import { BankAccount } from "@/types/bankAccount.types";
-import { Transaction } from "@/types/transaction.types";
+import { BankAccount } from "@/helpers/types/bankAccount.types";
+import { Transaction } from "@/helpers/types/transaction.types";
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,

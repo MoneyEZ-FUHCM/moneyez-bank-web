@@ -3,10 +3,10 @@
 import { LoadingSectionWrapper } from "@/components";
 import { ButtonCustom } from "@/components/ui/button";
 import { InputCustom } from "@/components/ui/input";
-import { TRANSACTION_TYPE } from "@/enums/globals";
+import { TRANSACTION_TYPE } from "@/helpers/enums/globals";
 import { Colors } from "@/helpers/constants/color";
 import { formatCurrency, formatTimestampWithHour } from "@/helpers/libs/utils";
-import { BankAccount } from "@/types/bankAccount.types";
+import { BankAccount } from "@/helpers/types/bankAccount.types";
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,

@@ -1,7 +1,7 @@
 "use client";
 
 import { PATH_NAME } from "@/helpers/constants/pathname";
-import useUserInfo from "@/hooks/useUserInfo";
+import useUserInfo from "@/helpers/hooks/useUserInfo";
 import { selectUserInfo } from "@/redux/slices/userSlice";
 import Cookies from "js-cookie";
 import { usePathname, useRouter } from "next/navigation";

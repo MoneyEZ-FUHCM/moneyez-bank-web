@@ -16,7 +16,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { useDecryptCredentials } from "@/hooks/useDecryptCredentials";
+import { useDecryptCredentials } from "@/helpers/hooks/useDecryptCredentials";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Checkbox, Form, Spin } from "antd";
 import { motion } from "framer-motion";
