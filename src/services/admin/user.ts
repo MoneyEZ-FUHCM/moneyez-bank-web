@@ -1,7 +1,7 @@
 import { COMMON_CONSTANT } from "@/helpers/constants/common";
 import apiSlice from "@/redux/slices/apiSlice";
-import { transformCommonResponse } from "@/types/common.type";
-import { User, UserFilter } from "@/types/user.types";
+import { transformCommonResponse } from "@/helpers/types/common.type";
+import { User, UserFilter } from "@/helpers/types/user.types";
 
 const { HTTP_METHOD } = COMMON_CONSTANT;
 const userManagementApi = apiSlice.injectEndpoints({

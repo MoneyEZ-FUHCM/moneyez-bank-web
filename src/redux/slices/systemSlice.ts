@@ -1,4 +1,4 @@
-import { SubCategory } from "@/types/category.types";
+import { SubCategory } from "@/helpers/types/category.types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface SystemData {

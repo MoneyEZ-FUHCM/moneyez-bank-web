@@ -1,9 +1,9 @@
 "use client";
 
 import Star from "@/assets/images/icons/star.png";
-import { TOAST_STATUS } from "@/enums/globals";
+import { TOAST_STATUS } from "@/helpers/enums/globals";
 import { PATH_NAME } from "@/helpers/constants/pathname";
-import { showToast } from "@/hooks/useShowToast";
+import { showToast } from "@/helpers/hooks/useShowToast";
 import { ArrowRightOutlined, CheckOutlined } from "@ant-design/icons";
 import Image from "next/image";
 import Link from "next/link";

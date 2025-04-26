@@ -1,6 +1,6 @@
 import { COMMON_CONSTANT } from "@/helpers/constants/common";
 import apiSlice from "@/redux/slices/apiSlice";
-import { UserInfo } from "@/types/user.types";
+import { UserInfo } from "@/helpers/types/user.types";
 
 const { HTTP_METHOD } = COMMON_CONSTANT;
 const authApi = apiSlice.injectEndpoints({

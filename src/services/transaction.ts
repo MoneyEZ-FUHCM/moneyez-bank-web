@@ -1,7 +1,7 @@
 import { COMMON_CONSTANT } from "@/helpers/constants/common";
 import apiSlice from "@/redux/slices/apiSlice";
-import { transformCommonResponse } from "@/types/common.type";
-import { Transaction } from "@/types/transaction.types";
+import { transformCommonResponse } from "@/helpers/types/common.type";
+import { Transaction } from "@/helpers/types/transaction.types";
 
 const { HTTP_METHOD } = COMMON_CONSTANT;
 const transactionManagementApi = apiSlice.injectEndpoints({

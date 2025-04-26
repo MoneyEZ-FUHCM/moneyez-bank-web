@@ -3,9 +3,9 @@
 import Admin from "@/assets/images/logo/avatar_admin.jpg";
 import LogoWeb from "@/assets/images/logo/logo_web.png";
 import { PATH_NAME } from "@/helpers/constants/pathname";
-import { useLogout } from "@/hooks/useLogout";
+import { useLogout } from "@/helpers/hooks/useLogout";
 import { selectUserInfo } from "@/redux/slices/userSlice";
-import { BankOutlined } from "@ant-design/icons";
+import { BankOutlined, UserOutlined } from "@ant-design/icons";
 import { FloatButton, Layout, Menu } from "antd";
 import Image from "next/image";
 import Link from "next/link";
@@ -44,6 +44,13 @@ const items: MenuItem[] = [
     <BankOutlined />,
     undefined,
     PATH_NAME.MANAGE_BANK,
+  ),
+  getItem(
+    SIDE_BAR.MANAGE_USER,
+    SIDE_BAR.POSITION_2,
+    <UserOutlined />,
+    undefined,
+    PATH_NAME.MANAGE_USER,
   ),
 ];
 

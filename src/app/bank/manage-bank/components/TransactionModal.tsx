@@ -1,8 +1,8 @@
 "use client";
 
-import { TRANSACTION_TYPE } from "@/enums/globals";
+import { TRANSACTION_TYPE } from "@/helpers/enums/globals";
 import { formatCurrency, formatTimestampWithHour } from "@/helpers/libs/utils";
-import { BankAccount } from "@/types/bankAccount.types";
+import { BankAccount } from "@/helpers/types/bankAccount.types";
 import {
   ArrowDownOutlined,
   ArrowRightOutlined,

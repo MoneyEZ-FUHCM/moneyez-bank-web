@@ -1,7 +1,7 @@
-import { TOAST_STATUS } from "@/enums/globals";
+import { TOAST_STATUS } from "@/helpers/enums/globals";
 import { COMMON_CONSTANT } from "@/helpers/constants/common";
-import { useDecryptCredentials } from "@/hooks/useDecryptCredentials";
-import { showToast } from "@/hooks/useShowToast";
+import { useDecryptCredentials } from "@/helpers/hooks/useDecryptCredentials";
+import { showToast } from "@/helpers/hooks/useShowToast";
 import {
   useConfirmNewPasswordMutation,
   useConfirmOtpMutation,
