@@ -1,7 +1,7 @@
 import { COMMON_CONSTANT } from "@/helpers/constants/common";
 import apiSlice from "@/redux/slices/apiSlice";
-import { BankAccount } from "@/types/bankAccount.types";
-import { transformCommonResponse } from "@/types/common.type";
+import { BankAccount } from "@/helpers/types/bankAccount.types";
+import { transformCommonResponse } from "@/helpers/types/common.type";
 
 const { HTTP_METHOD } = COMMON_CONSTANT;
 const accountManagementApi = apiSlice.injectEndpoints({

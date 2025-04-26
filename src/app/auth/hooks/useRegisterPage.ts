@@ -1,7 +1,7 @@
-import { TOAST_STATUS } from "@/enums/globals";
+import { TOAST_STATUS } from "@/helpers/enums/globals";
 import { COMMON_CONSTANT } from "@/helpers/constants/common";
 import { PATH_NAME } from "@/helpers/constants/pathname";
-import { showToast } from "@/hooks/useShowToast";
+import { showToast } from "@/helpers/hooks/useShowToast";
 import {
   useRegisterMutation,
   useResetPasswordMutation,

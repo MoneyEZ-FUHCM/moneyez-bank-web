@@ -1,16 +1,21 @@
 "use client";
 
 import { PATH_NAME } from "@/helpers/constants/pathname";
-import useUserInfo from "@/hooks/useUserInfo";
+import useUserInfo from "@/helpers/hooks/useUserInfo";
 import { selectUserInfo } from "@/redux/slices/userSlice";
 import Cookies from "js-cookie";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
-const VALID_PATHS = new Set(["/", "/notfound", PATH_NAME.MANAGE_BANK]);
+const VALID_PATHS = new Set([
+  "/",
+  "/notfound",
+  PATH_NAME.MANAGE_BANK,
+  PATH_NAME.MANAGE_USER,
+]);
 
-const ADMIN_PATHS = new Set([PATH_NAME.MANAGE_BANK]);
+const ADMIN_PATHS = new Set([PATH_NAME.MANAGE_BANK, PATH_NAME.MANAGE_USER]);
 
 const ADMIN_DYNAMIC_PATHS = /^\/bank\/(manage-bank)\/[^/]+$/;
 

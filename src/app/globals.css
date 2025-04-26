@@ -144,6 +144,18 @@ body {
 
 /* antd */
 
+.user-detail-modal .ant-modal-content {
+  background-color: transparent;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.user-detail-modal .ant-modal-header,
+.user-detail-modal .ant-modal-footer {
+  display: none;
+}
+
 .transaction-modal .ant-modal-content {
   background-color: transparent;
   box-shadow: none;
